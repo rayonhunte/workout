@@ -73,40 +73,43 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-md w-full max-h-screen overflow-y-auto">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-2xl max-w-md w-full max-h-screen overflow-y-auto shadow-2xl border border-gray-100">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-800">Add New Workout</h2>
+        <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-purple-50">
+          <div>
+            <h2 className="text-xl font-bold text-gray-800">Add New Workout</h2>
+            <p className="text-sm text-gray-600 mt-1">Create your personalized workout plan</p>
+          </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+            className="p-2 rounded-full hover:bg-white/80 transition-all duration-200 text-gray-500 hover:text-gray-700"
           >
             <FiX size={20} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-4">
+        <form onSubmit={handleSubmit} className="p-6">
           {/* Workout Templates */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="mb-6">
+            <label className="block text-sm font-semibold text-gray-700 mb-3">
               Quick Templates
             </label>
-            <div className="grid grid-cols-1 gap-2">
+            <div className="grid grid-cols-1 gap-3">
               {workoutTemplates.map((template, index) => (
                 <button
                   key={index}
                   type="button"
                   onClick={() => loadTemplate(template)}
-                  className={`text-left p-3 border rounded-lg hover:bg-blue-50 transition-colors ${
+                  className={`text-left p-4 border-2 rounded-xl hover:shadow-md transition-all duration-200 ${
                     selectedTemplate === template.name 
-                      ? 'border-blue-500 bg-blue-50' 
-                      : 'border-gray-200'
+                      ? 'border-blue-400 bg-gradient-to-r from-blue-50 to-blue-100 shadow-md' 
+                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                   }`}
                 >
-                  <div className="font-medium text-gray-800">{template.name}</div>
-                  <div className="text-sm text-gray-600">
-                    {template.exercises.length} exercises
+                  <div className="font-semibold text-gray-800">{template.name}</div>
+                  <div className="text-sm text-gray-600 mt-1">
+                    {template.exercises.length} exercises included
                   </div>
                 </button>
               ))}
@@ -114,8 +117,8 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout }) => {
           </div>
 
           {/* Workout Name */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="mb-5">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
               Workout Name *
             </label>
             <input
@@ -123,21 +126,21 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout }) => {
               value={workoutName}
               onChange={(e) => setWorkoutName(e.target.value)}
               placeholder="Enter workout name"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-0 focus:border-blue-400 transition-all duration-200"
               required
             />
           </div>
 
           {/* Date */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="mb-6">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
               Date *
             </label>
             <input
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-0 focus:border-blue-400 transition-all duration-200"
               required
             />
           </div>
@@ -211,20 +214,20 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout }) => {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex space-x-3">
+          <div className="flex space-x-3 pt-4">
             <button
               type="button"
               onClick={() => {
                 resetForm();
                 onClose();
               }}
-              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+              className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-medium"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+              className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl"
             >
               Add Workout
             </button>
