@@ -186,3 +186,18 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Hide scrollbar when modal is open - keeps scroll functionality */
+.hide-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* WebKit browsers (Chrome, Safari, Edge) */
+}
+
+/* Ensure smooth scrolling behavior is maintained */
+.hide-scrollbar {
+  scroll-behavior: smooth;
+}

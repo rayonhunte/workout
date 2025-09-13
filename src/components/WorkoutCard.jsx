@@ -1,8 +1,8 @@
 import React from 'react';
-import { FiActivity, FiCalendar, FiCheckCircle, FiClock } from 'react-icons/fi';
+import { FiActivity, FiCalendar, FiCheckCircle, FiClock, FiTrash2 } from 'react-icons/fi';
 import { formatDate, isToday } from '../utils/helpers';
 
-const WorkoutCard = ({ workout, onSelect, onToggleComplete }) => {
+const WorkoutCard = ({ workout, onSelect, onToggleComplete, onDelete }) => {
   const completedExercises = workout.exercises.filter(ex => ex.completed).length;
   const totalExercises = workout.exercises.length;
   const progress = totalExercises > 0 ? (completedExercises / totalExercises) * 100 : 0;
@@ -33,24 +33,37 @@ const WorkoutCard = ({ workout, onSelect, onToggleComplete }) => {
             )}
           </div>
         </div>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleComplete(workout.id);
-          }}
-          aria-label={workout.completed ? 'Mark workout as not completed' : 'Mark workout as completed'}
-          title={workout.completed ? 'Mark as not completed' : 'Mark as completed'}
-          className={`relative p-3 rounded-full transition-all duration-300 hover:scale-110 active:scale-95 focus-ring group/btn ${
-            workout.completed 
-              ? 'bg-green-100 text-green-600 hover:bg-green-200 shadow-lg hover:shadow-glow-green' 
-              : 'bg-gray-100 text-gray-400 hover:bg-blue-100 hover:text-blue-500 hover:shadow-md'
-          }`}
-        >
-          <FiCheckCircle size={22} className="transition-transform duration-200 group-hover/btn:rotate-12" />
-          {workout.completed && (
-            <div className="absolute inset-0 rounded-full border-2 border-green-400 animate-ping opacity-75"></div>
-          )}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(workout.id);
+            }}
+            aria-label="Delete workout"
+            title="Delete workout"
+            className="relative p-3 rounded-full transition-all duration-300 hover:scale-110 active:scale-95 focus-ring group/btn bg-gray-100 text-gray-400 hover:bg-red-100 hover:text-red-500 hover:shadow-md"
+          >
+            <FiTrash2 size={20} className="transition-transform duration-200 group-hover/btn:rotate-12" />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleComplete(workout.id);
+            }}
+            aria-label={workout.completed ? 'Mark workout as not completed' : 'Mark workout as completed'}
+            title={workout.completed ? 'Mark as not completed' : 'Mark as completed'}
+            className={`relative p-3 rounded-full transition-all duration-300 hover:scale-110 active:scale-95 focus-ring group/btn ${
+              workout.completed 
+                ? 'bg-green-100 text-green-600 hover:bg-green-200 shadow-lg hover:shadow-glow-green' 
+                : 'bg-gray-100 text-gray-400 hover:bg-blue-100 hover:text-blue-500 hover:shadow-md'
+            }`}
+          >
+            <FiCheckCircle size={22} className="transition-transform duration-200 group-hover/btn:rotate-12" />
+            {workout.completed && (
+              <div className="absolute inset-0 rounded-full border-2 border-green-400 animate-ping opacity-75"></div>
+            )}
+          </button>
+        </div>
       </div>
 
       <div className="relative z-10 mb-4">

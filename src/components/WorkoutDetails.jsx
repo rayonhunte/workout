@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FiArrowLeft, FiCheck, FiDroplet, FiSave, FiEdit, FiPlus, FiTrash2 } from "react-icons/fi";
 import { formatDate } from "../utils/helpers";
 
-const WorkoutDetails = ({ workout, onBack, onUpdateWorkout }) => {
+const WorkoutDetails = ({ workout, onBack, onUpdateWorkout, onDelete }) => {
   const [localWorkout, setLocalWorkout] = useState(workout);
   const [bloodSugarBefore, setBloodSugarBefore] = useState(
     workout.bloodSugar.before || ""
@@ -73,8 +73,8 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 dark:from-gray-900 dark:via-gray-900/80 dark:to-gray-900 animate-fade-in">
-      {/* Enhanced Header */}
-      <div className="glass shadow-soft sticky top-0 z-10 border-b border-white/20 animate-slide-down">
+      {/* Enhanced Header (part of normal flow, not sticky) */}
+      <div className="glass shadow-soft border-b border-white/20 animate-slide-down">
         <div className="max-w-md mx-auto mobile-padding py-4 sm:py-6">
           <div className="flex items-center mb-4 animate-slide-up">
             <button
@@ -167,7 +167,7 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout }) => {
         </div>
       </div>
 
-      <div className="max-w-md mx-auto mobile-padding py-4 sm:py-6 pb-20 sm:pb-24">
+      <div className="max-w-md mx-auto mobile-padding py-4 sm:py-6 pb-8 sm:pb-10">
         {/* Enhanced Blood Sugar Section */}
         <div className="card-base p-6 mb-6 hover:shadow-strong hover:-translate-y-2 animate-slide-up animate-delay-200">
           {/* Enhanced Header with Gradient Background */}
@@ -500,31 +500,53 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout }) => {
         </div>
       </div>
 
-      {/* Enhanced Floating Save Button */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 glass border-t border-white/20 shadow-2xl animate-slide-up">
+      {/* Save Section (part of normal flow, not fixed) */}
+      <div className="p-4 glass border-t border-white/20 shadow-2xl animate-slide-up">
         <div className="max-w-md mx-auto">
-          <button
-            onClick={saveWorkout}
-            aria-label="Save workout"
-            title="Save workout"
-            className="group relative w-full bg-gradient-to-r from-blue-500 via-blue-600 to-purple-600 hover:from-blue-600 hover:via-purple-600 hover:to-purple-700 text-white py-6 px-8 rounded-2xl font-bold text-lg flex items-center justify-center transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-strong hover:shadow-glow-purple border border-blue-400/20 hover:border-purple-400/30 overflow-hidden focus-ring"
-          >
-            {/* Enhanced Animated Background Gradient */}
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 via-purple-400/20 to-blue-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
+          <div className="flex gap-3">
+            <button
+              onClick={() => onDelete(workout.id)}
+              aria-label="Delete workout"
+              title="Delete workout"
+              className="group relative bg-gradient-to-r from-red-500 via-red-600 to-red-700 hover:from-red-600 hover:via-red-700 hover:to-red-800 text-white py-6 px-6 rounded-2xl font-bold text-lg flex items-center justify-center transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-strong hover:shadow-glow-red border border-red-400/20 hover:border-red-400/30 overflow-hidden focus-ring"
+            >
+              {/* Enhanced Animated Background Gradient */}
+              <div className="absolute inset-0 bg-gradient-to-r from-red-400/20 via-red-400/20 to-red-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
 
-            {/* Enhanced Icon with styling */}
-            <div className="relative z-10 flex items-center">
-              <div className="p-2.5 bg-white/20 rounded-xl mr-4 group-hover:bg-white/30 transition-all duration-300 group-hover:scale-110 shadow-md">
-                <FiSave size={24} className="drop-shadow-sm" />
+              {/* Enhanced Icon with styling */}
+              <div className="relative z-10 flex items-center">
+                <div className="p-2.5 bg-white/20 rounded-xl group-hover:bg-white/30 transition-all duration-300 group-hover:scale-110 shadow-md">
+                  <FiTrash2 size={24} className="drop-shadow-sm" />
+                </div>
               </div>
-              <span className="drop-shadow-sm tracking-wide text-xl">
-                {isEditing ? 'Save Changes' : 'Save Workout'}
-              </span>
-            </div>
 
-            {/* Enhanced shine effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-out"></div>
-          </button>
+              {/* Enhanced shine effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-out"></div>
+            </button>
+            
+            <button
+              onClick={saveWorkout}
+              aria-label="Save workout"
+              title="Save workout"
+              className="group relative flex-1 bg-gradient-to-r from-blue-500 via-blue-600 to-purple-600 hover:from-blue-600 hover:via-purple-600 hover:to-purple-700 text-white py-6 px-8 rounded-2xl font-bold text-lg flex items-center justify-center transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-strong hover:shadow-glow-purple border border-blue-400/20 hover:border-purple-400/30 overflow-hidden focus-ring"
+            >
+              {/* Enhanced Animated Background Gradient */}
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 via-purple-400/20 to-blue-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
+
+              {/* Enhanced Icon with styling */}
+              <div className="relative z-10 flex items-center">
+                <div className="p-2.5 bg-white/20 rounded-xl mr-4 group-hover:bg-white/30 transition-all duration-300 group-hover:scale-110 shadow-md">
+                  <FiSave size={24} className="drop-shadow-sm" />
+                </div>
+                <span className="drop-shadow-sm tracking-wide text-xl">
+                  {isEditing ? 'Save Changes' : 'Save Workout'}
+                </span>
+              </div>
+
+              {/* Enhanced shine effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-out"></div>
+            </button>
+          </div>
 
           {/* Enhanced helper text */}
           <p className="text-center text-xs text-gray-500 mt-4 transition-all duration-300 hover:text-gray-600 animate-fade-in animate-delay-300">

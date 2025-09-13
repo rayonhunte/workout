@@ -8,7 +8,7 @@ import GoogleSignInButton from './components/GoogleSignInButton';
 import { auth } from './firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 
-import { listenUserWorkouts, addUserWorkout, updateUserWorkout } from './utils/firestoreWorkouts';
+import { listenUserWorkouts, addUserWorkout, updateUserWorkout, deleteUserWorkout } from './utils/firestoreWorkouts';
 
 function App() {
   const [workouts, setWorkouts] = useState([]);
@@ -37,6 +37,20 @@ function App() {
     });
     return () => unsubscribe();
   }, []);
+
+  // Hide scrollbar when modal is open (for mobile experience)
+  useEffect(() => {
+    if (showAddModal) {
+      document.body.classList.add('hide-scrollbar');
+    } else {
+      document.body.classList.remove('hide-scrollbar');
+    }
+    
+    // Cleanup function to remove class when component unmounts
+    return () => {
+      document.body.classList.remove('hide-scrollbar');
+    };
+  }, [showAddModal]);
 
   const handleSelectWorkout = (workout) => {
     setSelectedWorkout(workout);
@@ -68,6 +82,26 @@ function App() {
     await updateUserWorkout(workoutId, { ...workout, completed: !workout.completed });
   };
 
+  // Delete workout from Firestore
+  const handleDeleteWorkout = async (workoutId) => {
+    if (!user) return;
+    if (window.confirm('Are you sure you want to delete this workout? This action cannot be undone.')) {
+      try {
+        await deleteUserWorkout(workoutId);
+        
+        // Manually update local state to ensure immediate UI update
+        setWorkouts(prevWorkouts => prevWorkouts.filter(w => w.id !== workoutId));
+        
+        // If we're currently viewing the deleted workout, go back to list
+        if (selectedWorkout && selectedWorkout.id === workoutId) {
+          handleBackToList();
+        }
+      } catch (error) {
+        console.error('Delete failed:', error);
+      }
+    }
+  };
+
   const stats = {
     total: workouts.length,
     completed: workouts.filter(w => w.completed).length,
@@ -94,6 +128,7 @@ function App() {
         workout={selectedWorkout}
         onBack={handleBackToList}
         onUpdateWorkout={handleUpdateWorkout}
+        onDelete={handleDeleteWorkout}
       />
     );
   }
@@ -110,7 +145,7 @@ function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 dark:from-gray-900 dark:via-gray-900/80 dark:to-gray-900 animate-fade-in">
       {/* Enhanced Header with improved animations */}
-      <div className="glass shadow-soft sticky top-0 z-10 border-b border-white/20 animate-slide-down">
+      <div className="glass shadow-soft border-b border-white/20 animate-slide-down">
         <div className="max-w-md mx-auto mobile-padding py-4 sm:py-6">
           <div className="flex items-center justify-between mb-4 sm:mb-6">
             <div className="animate-slide-up flex-1 pr-3">
@@ -232,6 +267,7 @@ function App() {
                     workout={workout}
                     onSelect={handleSelectWorkout}
                     onToggleComplete={handleToggleComplete}
+                    onDelete={handleDeleteWorkout}
                   />
                 </div>
               ))}

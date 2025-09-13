@@ -72,6 +72,7 @@ export default {
         'glow-blue': '0 0 20px rgba(59, 130, 246, 0.3)',
         'glow-green': '0 0 20px rgba(34, 197, 94, 0.3)',
         'glow-purple': '0 0 20px rgba(147, 51, 234, 0.3)',
+        'glow-red': '0 0 20px rgba(239, 68, 68, 0.3)',
       },
       // Custom backdrop blur values
       backdropBlur: {
