@@ -5,10 +5,9 @@
   "targets": {
     "allwork-e32b6": {
       "hosting": {
-        "dev": ["your-dev-site-id"],
-        "prod": ["your-prod-site-id"]
+        "dev": ["allwork-dev-e32b6.web.app"],
+        "prod": ["allwork-e32b6.web.app"]
       }
     }
   }
 }
-    
