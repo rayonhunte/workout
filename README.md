@@ -1,12 +1,57 @@
-# React + Vite
+# Workout Tracker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern React-based workout tracking application built with Vite, Tailwind CSS, and pnpm.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Track workouts with detailed information
+- Mark workouts as completed
+- View workout statistics
+- Responsive mobile-first design
+- Local storage persistence
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- **React 19** - UI framework
+- **Vite** - Build tool and dev server
+- **Tailwind CSS** - Styling framework
+- **Headless UI** - Accessible UI components
+- **React Icons** - Icon library
+- **pnpm** - Package manager
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+ 
+- pnpm (install with `npm install -g pnpm`)
+
+### Installation
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd workout
+
+# Install dependencies
+pnpm install
+
+# Start development server
+pnpm dev
+
+# Build for production
+pnpm build
+
+# Preview production build
+pnpm preview
+
+# Run linting
+pnpm lint
+```
+
+## Development
+
+This project uses:
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) for Fast Refresh
+- ESLint for code quality
+- Tailwind CSS for styling
