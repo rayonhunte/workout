@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "allwork-e32b6"
+  },
+  "targets": {
+    "allwork-e32b6": {
+      "hosting": {
+        "dev": ["your-dev-site-id"],
+        "prod": ["your-prod-site-id"]
+      }
+    }
+  }
+}
+    
