@@ -29,4 +29,4 @@ jobs:
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
           firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}"
           channelId: ${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}
-          projectId: your-firebase-project-id
+          projectId: allwork-e32b6
