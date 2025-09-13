@@ -1,21 +1,25 @@
-import React, { useState } from 'react';
-import { FiArrowLeft, FiCheck, FiDroplet, FiSave } from 'react-icons/fi';
-import { formatDate } from '../utils/helpers';
+import React, { useState } from "react";
+import { FiArrowLeft, FiCheck, FiDroplet, FiSave } from "react-icons/fi";
+import { formatDate } from "../utils/helpers";
 
 const WorkoutDetails = ({ workout, onBack, onUpdateWorkout }) => {
   const [localWorkout, setLocalWorkout] = useState(workout);
-  const [bloodSugarBefore, setBloodSugarBefore] = useState(workout.bloodSugar.before || '');
-  const [bloodSugarAfter, setBloodSugarAfter] = useState(workout.bloodSugar.after || '');
+  const [bloodSugarBefore, setBloodSugarBefore] = useState(
+    workout.bloodSugar.before || ""
+  );
+  const [bloodSugarAfter, setBloodSugarAfter] = useState(
+    workout.bloodSugar.after || ""
+  );
 
   const toggleExercise = (index) => {
     const updatedExercises = [...localWorkout.exercises];
     updatedExercises[index] = {
       ...updatedExercises[index],
-      completed: !updatedExercises[index].completed
+      completed: !updatedExercises[index].completed,
     };
     setLocalWorkout({
       ...localWorkout,
-      exercises: updatedExercises
+      exercises: updatedExercises,
     });
   };
 
@@ -26,133 +30,386 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout }) => {
         before: bloodSugarBefore ? parseInt(bloodSugarBefore) : null,
         after: bloodSugarAfter ? parseInt(bloodSugarAfter) : null,
       },
-      completed: localWorkout.exercises.every(ex => ex.completed)
+      completed: localWorkout.exercises.every((ex) => ex.completed),
     };
     onUpdateWorkout(updatedWorkout);
     onBack();
   };
 
-  const completedExercises = localWorkout.exercises.filter(ex => ex.completed).length;
+  const completedExercises = localWorkout.exercises.filter(
+    (ex) => ex.completed
+  ).length;
   const totalExercises = localWorkout.exercises.length;
-  const progress = totalExercises > 0 ? (completedExercises / totalExercises) * 100 : 0;
+  const progress =
+    totalExercises > 0 ? (completedExercises / totalExercises) * 100 : 0;
 
   return (
-    <div className="max-w-md mx-auto bg-white min-h-screen">
-      {/* Header */}
-      <div className="bg-blue-500 text-white p-4 sticky top-0 z-10">
-        <div className="flex items-center mb-2">
-          <button 
-            onClick={onBack}
-            className="mr-3 p-1 rounded-full hover:bg-blue-600 transition-colors"
-          >
-            <FiArrowLeft size={20} />
-          </button>
-          <h1 className="text-lg font-semibold">{localWorkout.name}</h1>
-        </div>
-        <p className="text-blue-100 text-sm">{formatDate(localWorkout.date)}</p>
-        
-        {/* Progress Bar */}
-        <div className="mt-3">
-          <div className="flex justify-between text-sm text-blue-100 mb-1">
-            <span>{completedExercises}/{totalExercises} exercises</span>
-            <span>{Math.round(progress)}%</span>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 animate-fade-in">
+      {/* Enhanced Header */}
+      <div className="glass shadow-soft sticky top-0 z-10 border-b border-white/20 animate-slide-down">
+        <div className="max-w-md mx-auto mobile-padding py-4 sm:py-6">
+          <div className="flex items-center mb-4 animate-slide-up">
+            <button
+              onClick={onBack}
+              className="mr-4 p-3 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 transition-all duration-300 hover:scale-110 active:scale-95 shadow-md hover:shadow-lg border border-gray-200/50 hover:border-gray-300/50 group focus-ring"
+            >
+              <FiArrowLeft
+                size={20}
+                className="text-gray-600 group-hover:text-gray-700 transition-all duration-300 group-hover:-translate-x-1"
+              />
+            </button>
+            <div className="flex-1">
+              <h1 className="text-2xl font-bold gradient-text text-shadow-sm">
+                {localWorkout.name}
+              </h1>
+              <p className="text-sm text-gray-600 mt-1 smooth-colors">
+                {formatDate(localWorkout.date)}
+              </p>
+            </div>
           </div>
-          <div className="w-full bg-blue-400 rounded-full h-2">
-            <div 
-              className="bg-white h-2 rounded-full transition-all"
-              style={{ width: `${progress}%` }}
-            ></div>
+
+          {/* Enhanced Progress Section */}
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-5 rounded-xl border border-blue-200/50 shadow-soft hover:shadow-medium transition-all duration-300 animate-slide-up animate-delay-100">
+            <div className="flex items-center justify-between text-sm text-blue-700 mb-4">
+              <span className="flex items-center font-medium">
+                <div className="p-2 bg-blue-500 text-white rounded-lg mr-3 shadow-md">
+                  <FiCheck size={14} />
+                </div>
+                <span className="text-blue-800">
+                  Progress:{" "}
+                  <span className="font-bold">
+                    {completedExercises}/{totalExercises}
+                  </span>{" "}
+                  exercises
+                </span>
+              </span>
+              <div className="flex items-center space-x-2">
+                <span className="font-bold text-xl text-blue-800">
+                  {Math.round(progress)}%
+                </span>
+                {progress === 100 && (
+                  <div className="w-3 h-3 bg-green-500 rounded-full animate-bounce-gentle"></div>
+                )}
+              </div>
+            </div>
+            <div className="progress-bar bg-blue-200 shadow-inner">
+              <div
+                className={`progress-fill relative overflow-hidden ${
+                  localWorkout.completed
+                    ? "bg-gradient-to-r from-green-400 to-green-500"
+                    : "bg-gradient-to-r from-blue-400 to-blue-500"
+                }`}
+                style={{ width: `${progress}%` }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="p-4">
-        {/* Blood Sugar Section */}
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-          <h2 className="text-lg font-semibold text-red-800 mb-3 flex items-center">
-            <FiDroplet className="mr-2" />
-            Blood Sugar Levels
-          </h2>
-          <div className="grid grid-cols-1 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-red-700 mb-1">
-                Before Workout (mg/dL)
+      <div className="max-w-md mx-auto mobile-padding py-4 sm:py-6 pb-20 sm:pb-24">
+        {/* Enhanced Blood Sugar Section */}
+        <div className="card-base p-6 mb-6 hover:shadow-strong hover:-translate-y-2 animate-slide-up animate-delay-200">
+          {/* Enhanced Header with Gradient Background */}
+          <div className="bg-gradient-to-br from-red-50 to-pink-50 -m-6 mb-6 p-6 rounded-t-2xl border-b border-red-100/50">
+            <h2 className="text-xl font-bold text-gray-800 flex items-center">
+              <div className="p-3 bg-gradient-to-br from-red-500 to-red-600 text-white rounded-xl mr-4 shadow-lg shadow-red-200/50">
+                <FiDroplet size={20} />
+              </div>
+              <div>
+                <span className="bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent">
+                  Blood Sugar Levels
+                </span>
+                <p className="text-sm text-gray-600 font-normal mt-1">
+                  Track your glucose before and after workout
+                </p>
+              </div>
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6">
+            {/* Before Workout Input */}
+            <div className="group">
+              <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                Before Workout
+                <span className="text-xs text-gray-500 ml-2 font-normal">
+                  (mg/dL)
+                </span>
               </label>
-              <input
-                type="number"
-                value={bloodSugarBefore}
-                onChange={(e) => setBloodSugarBefore(e.target.value)}
-                placeholder="Enter blood sugar level"
-                className="w-full px-3 py-2 border border-red-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              />
+              <div className="relative">
+                <input
+                  type="number"
+                  value={bloodSugarBefore}
+                  onChange={(e) => setBloodSugarBefore(e.target.value)}
+                  placeholder="Enter blood sugar level"
+                  className="input-base px-5 py-4 text-lg font-medium placeholder-gray-400 bg-gradient-to-br from-gray-50 to-white group-hover:bg-white hover:border-blue-300"
+                />
+                {bloodSugarBefore && (
+                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                    <div className="flex items-center space-x-2">
+                      <div
+                        className={`w-3 h-3 rounded-full ${
+                          parseInt(bloodSugarBefore) >= 70 &&
+                          parseInt(bloodSugarBefore) <= 180
+                            ? "bg-green-500"
+                            : "bg-yellow-500"
+                        }`}
+                      ></div>
+                      <span className="text-xs text-gray-500 font-medium">
+                        {parseInt(bloodSugarBefore) >= 70 &&
+                        parseInt(bloodSugarBefore) <= 180
+                          ? "Normal"
+                          : "Monitor"}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-red-700 mb-1">
-                After Workout (mg/dL)
+
+            {/* After Workout Input */}
+            <div className="group">
+              <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                After Workout
+                <span className="text-xs text-gray-500 ml-2 font-normal">
+                  (mg/dL)
+                </span>
               </label>
-              <input
-                type="number"
-                value={bloodSugarAfter}
-                onChange={(e) => setBloodSugarAfter(e.target.value)}
-                placeholder="Enter blood sugar level"
-                className="w-full px-3 py-2 border border-red-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              />
+              <div className="relative">
+                <input
+                  type="number"
+                  value={bloodSugarAfter}
+                  onChange={(e) => setBloodSugarAfter(e.target.value)}
+                  placeholder="Enter blood sugar level"
+                  className="input-base px-5 py-4 text-lg font-medium placeholder-gray-400 bg-gradient-to-br from-gray-50 to-white group-hover:bg-white hover:border-green-300"
+                />
+                {bloodSugarAfter && (
+                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                    <div className="flex items-center space-x-2">
+                      <div
+                        className={`w-3 h-3 rounded-full ${
+                          parseInt(bloodSugarAfter) >= 70 &&
+                          parseInt(bloodSugarAfter) <= 180
+                            ? "bg-green-500"
+                            : "bg-yellow-500"
+                        }`}
+                      ></div>
+                      <span className="text-xs text-gray-500 font-medium">
+                        {parseInt(bloodSugarAfter) >= 70 &&
+                        parseInt(bloodSugarAfter) <= 180
+                          ? "Normal"
+                          : "Monitor"}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
+
+            {/* Blood Sugar Change Indicator */}
+            {bloodSugarBefore && bloodSugarAfter && (
+              <div className="mt-2 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200/50">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-blue-700">
+                    Blood Sugar Change
+                  </span>
+                  <div className="flex items-center space-x-2">
+                    {(() => {
+                      const change =
+                        parseInt(bloodSugarAfter) - parseInt(bloodSugarBefore);
+                      const isDecrease = change < 0;
+                      const isIncrease = change > 0;
+                      return (
+                        <>
+                          <span
+                            className={`text-lg font-bold ${
+                              isDecrease
+                                ? "text-green-600"
+                                : isIncrease
+                                ? "text-red-600"
+                                : "text-gray-600"
+                            }`}
+                          >
+                            {change > 0 ? "+" : ""}
+                            {change} mg/dL
+                          </span>
+                          <div
+                            className={`w-3 h-3 rounded-full ${
+                              isDecrease
+                                ? "bg-green-500"
+                                : isIncrease
+                                ? "bg-red-500"
+                                : "bg-gray-400"
+                            }`}
+                          ></div>
+                        </>
+                      );
+                    })()}
+                  </div>
+                </div>
+                <p className="text-xs text-blue-600 mt-1">
+                  {(() => {
+                    const change =
+                      parseInt(bloodSugarAfter) - parseInt(bloodSugarBefore);
+                    if (change < 0)
+                      return "Great! Exercise helped lower your blood sugar.";
+                    if (change > 0)
+                      return "Blood sugar increased. Consider monitoring closely.";
+                    return "No change in blood sugar levels.";
+                  })()}
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Exercises Section */}
-        <div>
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Exercises</h2>
-          <div className="space-y-3">
+        {/* Enhanced Exercises Section */}
+        <div className="card-base p-6 hover:shadow-strong hover:-translate-y-2 animate-slide-up animate-delay-300">
+          <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center">
+            <div className="p-2 bg-blue-500 text-white rounded-lg mr-3">
+              <FiCheck size={18} />
+            </div>
+            Exercises
+          </h2>
+          <div className="space-y-4">
             {localWorkout.exercises.map((exercise, index) => (
               <div
                 key={index}
-                className={`border rounded-lg p-4 transition-all ${
-                  exercise.completed 
-                    ? 'bg-green-50 border-green-200' 
-                    : 'bg-gray-50 border-gray-200'
+                className={`group relative bg-white rounded-xl border-2 p-5 transition-all duration-300 hover:shadow-strong transform hover:-translate-y-2 hover:scale-[1.02] animate-slide-up overflow-hidden ${
+                  exercise.completed
+                    ? "border-green-400 bg-gradient-to-br from-green-50 via-green-25 to-white shadow-glow-green/30"
+                    : "border-gray-200 hover:border-blue-300 hover:shadow-glow-blue/30"
                 }`}
+                style={{ animationDelay: `${(index + 4) * 100}ms` }}
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <h3 className={`font-medium ${
-                      exercise.completed ? 'text-green-800 line-through' : 'text-gray-800'
-                    }`}>
-                      {exercise.name}
-                    </h3>
-                    <p className={`text-sm ${
-                      exercise.completed ? 'text-green-600' : 'text-gray-600'
-                    }`}>
-                      {exercise.sets} sets × {exercise.reps} reps
-                    </p>
+                {/* Enhanced Completion Status Indicator */}
+                <div
+                  className={`absolute top-0 left-0 w-full h-1 rounded-t-xl transition-all duration-300 ${
+                    exercise.completed
+                      ? "bg-gradient-to-r from-green-400 to-green-500"
+                      : "bg-gradient-to-r from-gray-200 to-gray-300 group-hover:from-blue-300 group-hover:to-blue-400"
+                  }`}
+                ></div>
+
+                {/* Subtle background animation overlay */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-out pointer-events-none"></div>
+
+                <div className="relative z-10 flex items-center justify-between">
+                  <div className="flex-1 pr-4">
+                    <div className="flex items-center mb-2">
+                      {/* Enhanced Exercise Number Badge */}
+                      <div
+                        className={`flex items-center justify-center w-10 h-10 rounded-full text-sm font-bold mr-4 transition-all duration-300 shadow-md ${
+                          exercise.completed
+                            ? "bg-green-500 text-white shadow-glow-green/50"
+                            : "bg-gray-100 text-gray-600 group-hover:bg-blue-100 group-hover:text-blue-600 group-hover:shadow-md"
+                        }`}
+                      >
+                        {index + 1}
+                      </div>
+                      <h3
+                        className={`font-bold text-lg transition-all duration-300 text-shadow-sm ${
+                          exercise.completed
+                            ? "text-green-800"
+                            : "text-gray-800 group-hover:text-gray-900"
+                        }`}
+                      >
+                        {exercise.name}
+                      </h3>
+                    </div>
+
+                    {/* Enhanced Exercise Details */}
+                    <div className="ml-14">
+                      <div
+                        className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 shadow-sm hover:shadow-md ${
+                          exercise.completed
+                            ? "bg-green-100 text-green-700 border border-green-200 hover:bg-green-200"
+                            : "bg-gray-100 text-gray-600 border border-gray-200 group-hover:bg-blue-50 group-hover:text-blue-700 group-hover:border-blue-200"
+                        }`}
+                      >
+                        <span className="font-bold text-base">
+                          {exercise.sets}
+                        </span>
+                        <span className="mx-1.5 text-xs">sets</span>
+                        <span className="mx-1.5 text-xs">×</span>
+                        <span className="font-bold text-base">
+                          {exercise.reps}
+                        </span>
+                        <span className="ml-1.5 text-xs">reps</span>
+                      </div>
+                    </div>
                   </div>
+
+                  {/* Enhanced Interactive Checkbox */}
                   <button
                     onClick={() => toggleExercise(index)}
-                    className={`p-2 rounded-full transition-colors ${
+                    className={`relative flex items-center justify-center w-14 h-14 rounded-xl border-2 transition-all duration-300 hover:scale-110 active:scale-95 focus-ring group/checkbox ${
                       exercise.completed
-                        ? 'bg-green-100 text-green-600 hover:bg-green-200'
-                        : 'bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600'
+                        ? "bg-green-500 border-green-500 text-white shadow-lg shadow-green-200/50 hover:bg-green-600 hover:border-green-600 hover:shadow-glow-green"
+                        : "bg-white border-gray-300 text-gray-400 hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50 hover:shadow-md group-hover:border-blue-300"
                     }`}
                   >
-                    <FiCheck size={20} />
+                    <FiCheck
+                      size={22}
+                      className={`transition-all duration-300 ${
+                        exercise.completed
+                          ? "scale-100 opacity-100"
+                          : "scale-75 opacity-60 group-hover:scale-90 group-hover:opacity-80"
+                      }`}
+                    />
+
+                    {/* Enhanced Completion Animation Ring */}
+                    {exercise.completed && (
+                      <div className="absolute inset-0 rounded-xl border-2 border-green-400 animate-ping opacity-75"></div>
+                    )}
+
+                    {/* Hover glow effect */}
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400/20 to-purple-400/20 opacity-0 group-hover/checkbox:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                   </button>
                 </div>
+
+                {/* Completion Overlay Effect */}
+                {exercise.completed && (
+                  <div className="absolute inset-0 bg-gradient-to-r from-green-400/10 to-green-500/10 rounded-xl pointer-events-none"></div>
+                )}
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Save Button */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200">
-        <button
-          onClick={saveWorkout}
-          className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg font-medium flex items-center justify-center hover:bg-blue-600 transition-colors"
-        >
-          <FiSave className="mr-2" />
-          Save Workout
-        </button>
+      {/* Enhanced Floating Save Button */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 glass border-t border-white/20 shadow-2xl animate-slide-up">
+        <div className="max-w-md mx-auto">
+          <button
+            onClick={saveWorkout}
+            className="group relative w-full bg-gradient-to-r from-blue-500 via-blue-600 to-purple-600 hover:from-blue-600 hover:via-purple-600 hover:to-purple-700 text-white py-6 px-8 rounded-2xl font-bold text-lg flex items-center justify-center transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-strong hover:shadow-glow-purple border border-blue-400/20 hover:border-purple-400/30 overflow-hidden focus-ring"
+          >
+            {/* Enhanced Animated Background Gradient */}
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 via-purple-400/20 to-blue-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
+
+            {/* Enhanced Icon with styling */}
+            <div className="relative z-10 flex items-center">
+              <div className="p-2.5 bg-white/20 rounded-xl mr-4 group-hover:bg-white/30 transition-all duration-300 group-hover:scale-110 shadow-md">
+                <FiSave size={24} className="drop-shadow-sm" />
+              </div>
+              <span className="drop-shadow-sm tracking-wide text-xl">
+                Save Workout
+              </span>
+            </div>
+
+            {/* Enhanced shine effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-out"></div>
+          </button>
+
+          {/* Enhanced helper text */}
+          <p className="text-center text-xs text-gray-500 mt-4 transition-all duration-300 hover:text-gray-600 animate-fade-in animate-delay-300">
+            All changes will be saved automatically
+          </p>
+        </div>
       </div>
     </div>
   );
