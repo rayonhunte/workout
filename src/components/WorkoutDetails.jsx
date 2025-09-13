@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FiArrowLeft, FiCheck, FiDroplet, FiSave } from "react-icons/fi";
+import { FiArrowLeft, FiCheck, FiDroplet, FiSave, FiEdit, FiPlus, FiTrash2 } from "react-icons/fi";
 import { formatDate } from "../utils/helpers";
 
 const WorkoutDetails = ({ workout, onBack, onUpdateWorkout }) => {
@@ -10,6 +10,34 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout }) => {
   const [bloodSugarAfter, setBloodSugarAfter] = useState(
     workout.bloodSugar.after || ""
   );
+  const [isEditing, setIsEditing] = useState(false);
+
+  const setName = (name) => setLocalWorkout({ ...localWorkout, name });
+  const setDate = (date) => setLocalWorkout({ ...localWorkout, date });
+
+  const addExercise = () => {
+    setLocalWorkout({
+      ...localWorkout,
+      exercises: [
+        { name: "", sets: 1, reps: "", completed: false },
+        ...localWorkout.exercises,
+      ],
+    });
+  };
+
+  const removeExercise = (index) => {
+    const updated = localWorkout.exercises.filter((_, i) => i !== index);
+    setLocalWorkout({ ...localWorkout, exercises: updated });
+  };
+
+  const updateExercise = (index, field, value) => {
+    const updated = [...localWorkout.exercises];
+    updated[index] = {
+      ...updated[index],
+      [field]: field === "sets" ? Math.max(1, parseInt(value) || 1) : value,
+    };
+    setLocalWorkout({ ...localWorkout, exercises: updated });
+  };
 
   const toggleExercise = (index) => {
     const updatedExercises = [...localWorkout.exercises];
@@ -44,14 +72,16 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout }) => {
     totalExercises > 0 ? (completedExercises / totalExercises) * 100 : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 animate-fade-in">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 dark:from-gray-900 dark:via-gray-900/80 dark:to-gray-900 animate-fade-in">
       {/* Enhanced Header */}
       <div className="glass shadow-soft sticky top-0 z-10 border-b border-white/20 animate-slide-down">
         <div className="max-w-md mx-auto mobile-padding py-4 sm:py-6">
           <div className="flex items-center mb-4 animate-slide-up">
             <button
               onClick={onBack}
-              className="mr-4 p-3 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 transition-all duration-300 hover:scale-110 active:scale-95 shadow-md hover:shadow-lg border border-gray-200/50 hover:border-gray-300/50 group focus-ring"
+              aria-label="Back to list"
+              title="Back"
+              className="mr-4 p-3 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 hover:from-gray-200 hover:to-gray-300 dark:hover:from-gray-600 dark:hover:to-gray-500 transition-all duration-300 hover:scale-110 active:scale-95 shadow-md hover:shadow-lg border border-gray-200/50 dark:border-gray-700/50 hover:border-gray-300/50 dark:hover:border-gray-600/50 group focus-ring"
             >
               <FiArrowLeft
                 size={20}
@@ -59,18 +89,47 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout }) => {
               />
             </button>
             <div className="flex-1">
-              <h1 className="text-2xl font-bold gradient-text text-shadow-sm">
-                {localWorkout.name}
-              </h1>
-              <p className="text-sm text-gray-600 mt-1 smooth-colors">
-                {formatDate(localWorkout.date)}
-              </p>
+              {isEditing ? (
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    value={localWorkout.name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Workout name"
+                    className="input-base w-full px-4 py-3 text-lg font-bold"
+                  />
+                  <input
+                    type="date"
+                    value={localWorkout.date}
+                    onChange={(e) => setDate(e.target.value)}
+                    className="input-base w-full px-4 py-2"
+                  />
+                </div>
+              ) : (
+                <>
+                  <h1 className="text-2xl font-bold gradient-text text-shadow-sm">
+                    {localWorkout.name}
+                  </h1>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 smooth-colors">
+                    {formatDate(localWorkout.date)}
+                  </p>
+                </>
+              )}
             </div>
+            <button
+              type="button"
+              onClick={() => setIsEditing((v) => !v)}
+              aria-label={isEditing ? "Stop editing" : "Edit workout"}
+              title={isEditing ? "Done" : "Edit"}
+              className="ml-2 p-3 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 hover:from-gray-200 hover:to-gray-300 dark:hover:from-gray-600 dark:hover:to-gray-500 transition-all duration-300 hover:scale-110 active:scale-95 shadow-md hover:shadow-lg border border-gray-200/50 dark:border-gray-700/50 focus-ring"
+            >
+              <FiEdit size={18} className="text-gray-600 dark:text-gray-200" />
+            </button>
           </div>
 
           {/* Enhanced Progress Section */}
-          <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-5 rounded-xl border border-blue-200/50 shadow-soft hover:shadow-medium transition-all duration-300 animate-slide-up animate-delay-100">
-            <div className="flex items-center justify-between text-sm text-blue-700 mb-4">
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 p-5 rounded-xl border border-blue-200/50 dark:border-blue-800/40 shadow-soft hover:shadow-medium transition-all duration-300 animate-slide-up animate-delay-100">
+            <div className="flex items-center justify-between text-sm text-blue-700 dark:text-blue-200 mb-4">
               <span className="flex items-center font-medium">
                 <div className="p-2 bg-blue-500 text-white rounded-lg mr-3 shadow-md">
                   <FiCheck size={14} />
@@ -84,7 +143,7 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout }) => {
                 </span>
               </span>
               <div className="flex items-center space-x-2">
-                <span className="font-bold text-xl text-blue-800">
+                <span className="font-bold text-xl text-blue-800 dark:text-blue-200">
                   {Math.round(progress)}%
                 </span>
                 {progress === 100 && (
@@ -92,7 +151,7 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout }) => {
                 )}
               </div>
             </div>
-            <div className="progress-bar bg-blue-200 shadow-inner">
+            <div className="progress-bar bg-blue-200 dark:bg-blue-900/40 shadow-inner">
               <div
                 className={`progress-fill relative overflow-hidden ${
                   localWorkout.completed
@@ -131,7 +190,7 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout }) => {
           <div className="grid grid-cols-1 gap-6">
             {/* Before Workout Input */}
             <div className="group">
-              <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3 flex items-center">
                 <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
                 Before Workout
                 <span className="text-xs text-gray-500 ml-2 font-normal">
@@ -171,7 +230,7 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout }) => {
 
             {/* After Workout Input */}
             <div className="group">
-              <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3 flex items-center">
                 <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
                 After Workout
                 <span className="text-xs text-gray-500 ml-2 font-normal">
@@ -268,17 +327,28 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout }) => {
 
         {/* Enhanced Exercises Section */}
         <div className="card-base p-6 hover:shadow-strong hover:-translate-y-2 animate-slide-up animate-delay-300">
-          <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center">
+          <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-6 flex items-center justify-between">
             <div className="p-2 bg-blue-500 text-white rounded-lg mr-3">
               <FiCheck size={18} />
             </div>
-            Exercises
+            <span>Exercises</span>
+            {isEditing && (
+              <button
+                type="button"
+                onClick={addExercise}
+                className="ml-auto inline-flex items-center px-3 py-2 rounded-xl text-xs font-semibold bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-200 hover:bg-blue-100 dark:hover:bg-blue-900/50 border border-blue-200/60 dark:border-blue-800/60 focus-ring"
+                aria-label="Add exercise"
+                title="Add exercise"
+              >
+                <FiPlus className="mr-2" size={14} /> Add
+              </button>
+            )}
           </h2>
           <div className="space-y-4">
             {localWorkout.exercises.map((exercise, index) => (
               <div
                 key={index}
-                className={`group relative bg-white rounded-xl border-2 p-5 transition-all duration-300 hover:shadow-strong transform hover:-translate-y-2 hover:scale-[1.02] animate-slide-up overflow-hidden ${
+                className={`group relative bg-white dark:bg-gray-900 rounded-xl border-2 p-5 transition-all duration-300 hover:shadow-strong transform hover:-translate-y-2 hover:scale-[1.02] animate-slide-up overflow-hidden ${
                   exercise.completed
                     ? "border-green-400 bg-gradient-to-br from-green-50 via-green-25 to-white shadow-glow-green/30"
                     : "border-gray-200 hover:border-blue-300 hover:shadow-glow-blue/30"
@@ -310,65 +380,114 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout }) => {
                       >
                         {index + 1}
                       </div>
-                      <h3
-                        className={`font-bold text-lg transition-all duration-300 text-shadow-sm ${
-                          exercise.completed
-                            ? "text-green-800"
-                            : "text-gray-800 group-hover:text-gray-900"
-                        }`}
-                      >
-                        {exercise.name}
-                      </h3>
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={exercise.name}
+                          onChange={(e) => updateExercise(index, "name", e.target.value)}
+                          placeholder={`Exercise ${index + 1}`}
+                          className="input-base w-full max-w-[60%] px-3 py-2 font-semibold"
+                        />
+                      ) : (
+                        <h3
+                          className={`font-bold text-lg transition-all duration-300 text-shadow-sm ${
+                            exercise.completed
+                              ? "text-green-800"
+                              : "text-gray-800 group-hover:text-gray-900 dark:text-gray-100"
+                          }`}
+                        >
+                          {exercise.name}
+                        </h3>
+                      )}
                     </div>
 
                     {/* Enhanced Exercise Details */}
                     <div className="ml-14">
-                      <div
-                        className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 shadow-sm hover:shadow-md ${
-                          exercise.completed
-                            ? "bg-green-100 text-green-700 border border-green-200 hover:bg-green-200"
-                            : "bg-gray-100 text-gray-600 border border-gray-200 group-hover:bg-blue-50 group-hover:text-blue-700 group-hover:border-blue-200"
-                        }`}
-                      >
-                        <span className="font-bold text-base">
-                          {exercise.sets}
-                        </span>
-                        <span className="mx-1.5 text-xs">sets</span>
-                        <span className="mx-1.5 text-xs">×</span>
-                        <span className="font-bold text-base">
-                          {exercise.reps}
-                        </span>
-                        <span className="ml-1.5 text-xs">reps</span>
-                      </div>
+                      {isEditing ? (
+                        <div className="grid grid-cols-2 gap-3 max-w-sm">
+                          <div>
+                            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1 uppercase tracking-wide">Sets</label>
+                            <input
+                              type="number"
+                              min={1}
+                              max={99}
+                              value={exercise.sets}
+                              onChange={(e) => updateExercise(index, "sets", e.target.value)}
+                              className="input-base px-3 py-2 text-center"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1 uppercase tracking-wide">Reps / Duration</label>
+                            <input
+                              type="text"
+                              value={exercise.reps}
+                              onChange={(e) => updateExercise(index, "reps", e.target.value)}
+                              placeholder="15 or 30 sec"
+                              className="input-base px-3 py-2"
+                            />
+                          </div>
+                          <div className="col-span-2 flex justify-end">
+                            <button
+                              type="button"
+                              onClick={() => removeExercise(index)}
+                              className="inline-flex items-center px-3 py-2 rounded-xl text-xs font-semibold text-red-600 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 border border-red-200/60 dark:border-red-800/60 focus-ring"
+                              aria-label="Remove exercise"
+                              title="Remove exercise"
+                            >
+                              <FiTrash2 className="mr-1.5" size={14} /> Remove
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div
+                          className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 shadow-sm hover:shadow-md ${
+                            exercise.completed
+                              ? "bg-green-100 text-green-700 border border-green-200 hover:bg-green-200"
+                              : "bg-gray-100 text-gray-600 border border-gray-200 group-hover:bg-blue-50 group-hover:text-blue-700 group-hover:border-blue-200"
+                          }`}
+                        >
+                          <span className="font-bold text-base">
+                            {exercise.sets}
+                          </span>
+                          <span className="mx-1.5 text-xs">sets</span>
+                          <span className="mx-1.5 text-xs">×</span>
+                          <span className="font-bold text-base">
+                            {exercise.reps}
+                          </span>
+                          <span className="ml-1.5 text-xs">reps</span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
                   {/* Enhanced Interactive Checkbox */}
-                  <button
-                    onClick={() => toggleExercise(index)}
-                    className={`relative flex items-center justify-center w-14 h-14 rounded-xl border-2 transition-all duration-300 hover:scale-110 active:scale-95 focus-ring group/checkbox ${
-                      exercise.completed
-                        ? "bg-green-500 border-green-500 text-white shadow-lg shadow-green-200/50 hover:bg-green-600 hover:border-green-600 hover:shadow-glow-green"
-                        : "bg-white border-gray-300 text-gray-400 hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50 hover:shadow-md group-hover:border-blue-300"
-                    }`}
-                  >
-                    <FiCheck
-                      size={22}
-                      className={`transition-all duration-300 ${
+                  {!isEditing && (
+                    <button
+                      onClick={() => toggleExercise(index)}
+                      className={`relative flex items-center justify-center w-14 h-14 rounded-xl border-2 transition-all duration-300 hover:scale-110 active:scale-95 focus-ring group/checkbox ${
                         exercise.completed
-                          ? "scale-100 opacity-100"
-                          : "scale-75 opacity-60 group-hover:scale-90 group-hover:opacity-80"
+                          ? "bg-green-500 border-green-500 text-white shadow-lg shadow-green-200/50 hover:bg-green-600 hover:border-green-600 hover:shadow-glow-green"
+                          : "bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-400 hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-gray-800 hover:shadow-md group-hover:border-blue-300"
                       }`}
-                    />
+                    >
+                      <FiCheck
+                        size={22}
+                        className={`transition-all duration-300 ${
+                          exercise.completed
+                            ? "scale-100 opacity-100"
+                            : "scale-75 opacity-60 group-hover:scale-90 group-hover:opacity-80"
+                        }`}
+                      />
 
-                    {/* Enhanced Completion Animation Ring */}
-                    {exercise.completed && (
-                      <div className="absolute inset-0 rounded-xl border-2 border-green-400 animate-ping opacity-75"></div>
-                    )}
+                      {/* Enhanced Completion Animation Ring */}
+                      {exercise.completed && (
+                        <div className="absolute inset-0 rounded-xl border-2 border-green-400 animate-ping opacity-75"></div>
+                      )}
 
-                    {/* Hover glow effect */}
-                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400/20 to-purple-400/20 opacity-0 group-hover/checkbox:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                  </button>
+                      {/* Hover glow effect */}
+                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400/20 to-purple-400/20 opacity-0 group-hover/checkbox:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                    </button>
+                  )}
                 </div>
 
                 {/* Completion Overlay Effect */}
@@ -386,6 +505,8 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout }) => {
         <div className="max-w-md mx-auto">
           <button
             onClick={saveWorkout}
+            aria-label="Save workout"
+            title="Save workout"
             className="group relative w-full bg-gradient-to-r from-blue-500 via-blue-600 to-purple-600 hover:from-blue-600 hover:via-purple-600 hover:to-purple-700 text-white py-6 px-8 rounded-2xl font-bold text-lg flex items-center justify-center transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-strong hover:shadow-glow-purple border border-blue-400/20 hover:border-purple-400/30 overflow-hidden focus-ring"
           >
             {/* Enhanced Animated Background Gradient */}
@@ -397,7 +518,7 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout }) => {
                 <FiSave size={24} className="drop-shadow-sm" />
               </div>
               <span className="drop-shadow-sm tracking-wide text-xl">
-                Save Workout
+                {isEditing ? 'Save Changes' : 'Save Workout'}
               </span>
             </div>
 

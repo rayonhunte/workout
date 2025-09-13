@@ -19,7 +19,7 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout }) => {
   const [selectedTemplate, setSelectedTemplate] = useState("");
 
   const addExercise = () => {
-    setExercises([...exercises, { name: "", sets: 1, reps: "" }]);
+  setExercises([{ name: "", sets: 1, reps: "" }, ...exercises]);
   };
 
   const removeExercise = (index) => {
@@ -82,7 +82,7 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout }) => {
 
   return (
     <Transition show={isOpen}>
-      <Dialog onClose={onClose} className="relative z-50">
+  <Dialog onClose={onClose} className="relative z-50">
         {/* Backdrop */}
         <TransitionChild
           enter="ease-out duration-300"
@@ -105,20 +105,20 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout }) => {
             leaveFrom="opacity-100 scale-100 translate-y-0"
             leaveTo="opacity-0 scale-95 translate-y-4"
           >
-            <DialogPanel className="modal-content bg-white rounded-2xl max-w-md w-full max-h-[95vh] sm:max-h-screen overflow-y-auto shadow-2xl border border-gray-100">
+            <DialogPanel className="modal-content bg-white dark:bg-gray-900 rounded-2xl max-w-md w-full max-h-[95vh] sm:max-h-screen overflow-y-auto shadow-2xl border border-gray-100 dark:border-gray-800">
               {/* Header */}
-              <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-purple-50">
+              <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800">
                 <div>
-                  <DialogTitle className="text-xl font-bold text-gray-800">
+                  <DialogTitle className="text-xl font-bold text-gray-800 dark:text-gray-100">
                     Add New Workout
                   </DialogTitle>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                     Create your personalized workout plan
                   </p>
                 </div>
                 <button
                   onClick={onClose}
-                  className="p-2 rounded-full hover:bg-white/80 transition-all duration-200 text-gray-500 hover:text-gray-700"
+                  className="p-2 rounded-full hover:bg-white/80 dark:hover:bg-gray-800/60 transition-all duration-200 text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white"
                 >
                   <FiX size={20} />
                 </button>
@@ -127,7 +127,7 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout }) => {
               <form onSubmit={handleSubmit} className="p-6 space-y-6">
                 {/* Workout Templates */}
                 <div className="mb-6">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
                     Quick Templates
                   </label>
                   <div className="grid grid-cols-1 gap-3">
@@ -138,8 +138,8 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout }) => {
                         onClick={() => loadTemplate(template)}
                         className={`group relative text-left p-5 border-2 rounded-xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] ${
                           selectedTemplate === template.name
-                            ? "border-blue-500 bg-gradient-to-br from-blue-50 via-blue-100 to-purple-50 shadow-xl scale-[1.02]"
-                            : "border-gray-200 hover:border-blue-300 hover:bg-gradient-to-br hover:from-gray-50 hover:to-blue-50 hover:shadow-lg"
+                            ? "border-blue-500 bg-gradient-to-br from-blue-50 via-blue-100 to-purple-50 dark:from-blue-900/20 dark:via-blue-800/20 dark:to-purple-900/20 shadow-xl scale-[1.02]"
+                            : "border-gray-200 dark:border-gray-700 hover:border-blue-300 hover:bg-gradient-to-br hover:from-gray-50 hover:to-blue-50 dark:hover:from-gray-800 dark:hover:to-gray-700 hover:shadow-lg"
                         }`}
                       >
                         {/* Selection indicator */}
@@ -154,16 +154,16 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout }) => {
                         <div className="pr-8">
                           <div className={`font-bold text-lg mb-2 transition-colors duration-200 ${
                             selectedTemplate === template.name 
-                              ? "text-blue-800" 
-                              : "text-gray-800 group-hover:text-blue-700"
+                              ? "text-blue-800 dark:text-blue-200" 
+                              : "text-gray-800 dark:text-gray-100 group-hover:text-blue-700"
                           }`}>
                             {template.name}
                           </div>
                           
                           <div className={`text-sm mb-3 transition-colors duration-200 ${
                             selectedTemplate === template.name 
-                              ? "text-blue-600" 
-                              : "text-gray-600 group-hover:text-gray-700"
+                              ? "text-blue-600 dark:text-blue-300" 
+                              : "text-gray-600 dark:text-gray-300 group-hover:text-gray-700"
                           }`}>
                             {template.exercises.length} exercises • Perfect for quick workouts
                           </div>
@@ -175,8 +175,8 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout }) => {
                                 key={exerciseIndex}
                                 className={`text-xs px-2 py-1 rounded-md inline-block mr-2 transition-colors duration-200 ${
                                   selectedTemplate === template.name
-                                    ? "bg-blue-200/60 text-blue-800"
-                                    : "bg-gray-100 text-gray-600 group-hover:bg-blue-100 group-hover:text-blue-700"
+                                    ? "bg-blue-200/60 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200"
+                                    : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 group-hover:bg-blue-100 dark:group-hover:bg-gray-700 group-hover:text-blue-700"
                                 }`}
                               >
                                 {exercise.name}
@@ -185,8 +185,8 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout }) => {
                             {template.exercises.length > 2 && (
                               <div className={`text-xs px-2 py-1 rounded-md inline-block transition-colors duration-200 ${
                                 selectedTemplate === template.name
-                                  ? "bg-blue-200/60 text-blue-800"
-                                  : "bg-gray-100 text-gray-600 group-hover:bg-blue-100 group-hover:text-blue-700"
+                                  ? "bg-blue-200/60 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200"
+                                  : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 group-hover:bg-blue-100 dark:group-hover:bg-gray-700 group-hover:text-blue-700"
                               }`}>
                                 +{template.exercises.length - 2} more
                               </div>
@@ -207,7 +207,7 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout }) => {
 
                 {/* Enhanced Workout Name */}
                 <div className="mb-6 animate-slide-up animate-delay-100">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
                     Workout Name *
                   </label>
                   <input
@@ -222,7 +222,7 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout }) => {
 
                 {/* Enhanced Date */}
                 <div className="mb-6 animate-slide-up animate-delay-200">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
                     Date *
                   </label>
                   <input
@@ -248,7 +248,7 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout }) => {
                     <button
                       type="button"
                       onClick={addExercise}
-                      className="group flex items-center px-5 py-3 text-blue-600 hover:text-white bg-blue-50 hover:bg-gradient-to-r hover:from-blue-500 hover:to-blue-600 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-sm hover:shadow-lg border border-blue-200 hover:border-transparent focus-ring"
+                      className="group flex items-center px-5 py-3 text-blue-600 dark:text-blue-200 hover:text-white bg-blue-50 dark:bg-blue-900/20 hover:bg-gradient-to-r hover:from-blue-500 hover:to-blue-600 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-sm hover:shadow-lg border border-blue-200 dark:border-blue-800 hover:border-transparent focus-ring"
                     >
                       <FiPlus size={16} className="mr-2 transition-transform duration-200 group-hover:rotate-90" />
                       Add Exercise
@@ -259,7 +259,7 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout }) => {
                     {exercises.map((exercise, index) => (
                       <div
                         key={index}
-                        className="group relative border-2 border-gray-200 rounded-2xl p-5 bg-gradient-to-br from-white to-gray-50/50 hover:from-blue-50/30 hover:to-purple-50/30 hover:border-blue-300 transition-all duration-300 shadow-sm hover:shadow-lg transform hover:scale-[1.01]"
+                        className="group relative border-2 border-gray-200 dark:border-gray-700 rounded-2xl p-5 bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800 hover:from-blue-50/30 hover:to-purple-50/30 dark:hover:from-gray-800 dark:hover:to-gray-700 hover:border-blue-300 transition-all duration-300 shadow-sm hover:shadow-lg transform hover:scale-[1.01]"
                       >
                         {/* Exercise header with enhanced styling */}
                         <div className="flex items-center justify-between mb-4">
@@ -268,10 +268,10 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout }) => {
                               {index + 1}
                             </div>
                             <div>
-                              <span className="text-sm font-bold text-gray-800">
+                              <span className="text-sm font-bold text-gray-800 dark:text-gray-100">
                                 Exercise {index + 1}
                               </span>
-                              <p className="text-xs text-gray-500">
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
                                 {exercise.name || 'Unnamed exercise'}
                               </p>
                             </div>
@@ -280,7 +280,7 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout }) => {
                             <button
                               type="button"
                               onClick={() => removeExercise(index)}
-                              className="group/delete p-2.5 text-red-400 hover:text-white bg-red-50 hover:bg-gradient-to-r hover:from-red-500 hover:to-red-600 rounded-xl transition-all duration-300 transform hover:scale-110 active:scale-95 shadow-sm hover:shadow-lg border border-red-200 hover:border-transparent opacity-0 group-hover:opacity-100"
+                              className="group/delete p-2.5 text-red-400 hover:text-white bg-red-50 dark:bg-red-900/20 hover:bg-gradient-to-r hover:from-red-500 hover:to-red-600 rounded-xl transition-all duration-300 transform hover:scale-110 active:scale-95 shadow-sm hover:shadow-lg border border-red-200 dark:border-red-800 hover:border-transparent opacity-0 group-hover:opacity-100"
                             >
                               <FiTrash2 size={16} className="transition-transform duration-200 group-hover/delete:rotate-12" />
                             </button>
@@ -291,7 +291,7 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout }) => {
                         <div className="space-y-4">
                           {/* Exercise name with improved styling */}
                           <div className="relative">
-                            <label className="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">
+                            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-2 uppercase tracking-wide">
                               Exercise Name
                             </label>
                             <input
@@ -301,7 +301,7 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout }) => {
                               onChange={(e) =>
                                 updateExercise(index, "name", e.target.value)
                               }
-                              className="input-base px-4 py-3.5 text-gray-800 font-medium placeholder-gray-400 hover:shadow-md"
+                              className="input-base px-4 py-3.5 text-gray-800 dark:text-gray-100 font-medium placeholder-gray-400 hover:shadow-md"
                               required
                             />
                             {/* Visual indicator for filled state */}
@@ -311,9 +311,9 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout }) => {
                           </div>
 
                           {/* Sets and Reps with enhanced grid layout */}
-                          <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-4">
                             <div className="relative">
-                              <label className="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">
+                              <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-2 uppercase tracking-wide">
                                 Sets
                               </label>
                               <div className="relative">
@@ -324,7 +324,7 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout }) => {
                                   onChange={(e) =>
                                     updateExercise(index, "sets", e.target.value)
                                   }
-                                  className="input-base px-4 py-3.5 text-gray-800 font-medium text-center hover:shadow-md"
+                                  className="input-base px-4 py-3.5 text-gray-800 dark:text-gray-100 font-medium text-center hover:shadow-md"
                                   min="1"
                                   max="20"
                                   required
@@ -335,7 +335,7 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout }) => {
                               </div>
                             </div>
                             <div className="relative">
-                              <label className="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">
+                              <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-2 uppercase tracking-wide">
                                 Reps / Duration
                               </label>
                               <input
@@ -345,7 +345,7 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout }) => {
                                 onChange={(e) =>
                                   updateExercise(index, "reps", e.target.value)
                                 }
-                                className="input-base px-4 py-3.5 text-gray-800 font-medium hover:shadow-md"
+                                className="input-base px-4 py-3.5 text-gray-800 dark:text-gray-100 font-medium hover:shadow-md"
                                 required
                               />
                             </div>
@@ -359,7 +359,7 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout }) => {
                                   ? 'bg-green-500' 
                                   : 'bg-gray-300'
                               }`}></div>
-                              <span className="text-xs text-gray-500 font-medium">
+                              <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
                                 {exercise.name && exercise.reps && exercise.sets 
                                   ? 'Complete' 
                                   : 'Fill all fields'}

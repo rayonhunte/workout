@@ -23,8 +23,8 @@ A modern React-based workout tracking application built with Vite, Tailwind CSS,
 
 ### Prerequisites
 
-- Node.js 18+ 
-- pnpm (install with `npm install -g pnpm`)
+- Node.js 18+
+- pnpm 9 (recommended to enable via Corepack)
 
 ### Installation
 
@@ -33,7 +33,11 @@ A modern React-based workout tracking application built with Vite, Tailwind CSS,
 git clone <repository-url>
 cd workout
 
-# Install dependencies
+# Enable pnpm via Corepack (recommended)
+corepack enable
+corepack prepare pnpm@9 --activate
+
+# Install dependencies (pnpm is pinned in package.json)
 pnpm install
 
 # Start development server
@@ -47,6 +51,11 @@ pnpm preview
 
 # Run linting
 pnpm lint
+
+## UI Notes
+
+- Dark mode is supported via Tailwind's `class` strategy. Use the sun/moon toggle in the header to switch themes. Preference persists to `localStorage`.
+- Filter chips (All / Today's / Completed) help narrow the workout list.
 ```
 
 ## Development

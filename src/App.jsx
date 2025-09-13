@@ -3,28 +3,40 @@ import { FiPlus, FiActivity, FiTrendingUp } from 'react-icons/fi';
 import WorkoutCard from './components/WorkoutCard';
 import WorkoutDetails from './components/WorkoutDetails';
 import AddWorkoutModal from './components/AddWorkoutModal';
-import { sampleWorkouts } from './data/workouts';
+import ThemeToggle from './components/ThemeToggle';
+import GoogleSignInButton from './components/GoogleSignInButton';
+import { auth } from './firebase';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+
+import { listenUserWorkouts, addUserWorkout, updateUserWorkout } from './utils/firestoreWorkouts';
 
 function App() {
   const [workouts, setWorkouts] = useState([]);
   const [selectedWorkout, setSelectedWorkout] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [currentView, setCurrentView] = useState('list'); // 'list' or 'details'
+  const [filter, setFilter] = useState('all'); // all | today | completed
+  const [user, setUser] = useState(null);
 
-  // Load workouts from localStorage or use sample data
+  // Replace localStorage logic with Firestore sync
   useEffect(() => {
-    const savedWorkouts = localStorage.getItem('workouts');
-    if (savedWorkouts) {
-      setWorkouts(JSON.parse(savedWorkouts));
-    } else {
-      setWorkouts(sampleWorkouts);
+    if (!user) {
+      setWorkouts([]);
+      return;
     }
-  }, []);
+    // Listen to Firestore workouts for this user
+    const unsubscribe = listenUserWorkouts(user.uid, (workouts) => {
+      setWorkouts(workouts);
+    });
+    return () => unsubscribe();
+  }, [user]);
 
-  // Save workouts to localStorage whenever workouts change
   useEffect(() => {
-    localStorage.setItem('workouts', JSON.stringify(workouts));
-  }, [workouts]);
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const handleSelectWorkout = (workout) => {
     setSelectedWorkout(workout);
@@ -36,20 +48,24 @@ function App() {
     setCurrentView('list');
   };
 
-  const handleUpdateWorkout = (updatedWorkout) => {
-    setWorkouts(workouts.map(w => 
-      w.id === updatedWorkout.id ? updatedWorkout : w
-    ));
+  // Add workout to Firestore
+  const handleAddWorkout = async (newWorkout) => {
+    if (!user) return;
+    await addUserWorkout(user.uid, newWorkout);
   };
 
-  const handleToggleComplete = (workoutId) => {
-    setWorkouts(workouts.map(w => 
-      w.id === workoutId ? { ...w, completed: !w.completed } : w
-    ));
+  // Update workout in Firestore
+  const handleUpdateWorkout = async (updatedWorkout) => {
+    if (!user) return;
+    await updateUserWorkout(updatedWorkout.id, updatedWorkout);
   };
 
-  const handleAddWorkout = (newWorkout) => {
-    setWorkouts([...workouts, newWorkout]);
+  // Toggle complete in Firestore
+  const handleToggleComplete = async (workoutId) => {
+    if (!user) return;
+    const workout = workouts.find(w => w.id === workoutId);
+    if (!workout) return;
+    await updateUserWorkout(workoutId, { ...workout, completed: !workout.completed });
   };
 
   const stats = {
@@ -62,6 +78,16 @@ function App() {
     }).length
   };
 
+  const filteredWorkouts = workouts.filter((w) => {
+    if (filter === 'today') {
+      return new Date(w.date).toDateString() === new Date().toDateString();
+    }
+    if (filter === 'completed') {
+      return w.completed;
+    }
+    return true;
+  });
+
   if (currentView === 'details' && selectedWorkout) {
     return (
       <WorkoutDetails
@@ -72,8 +98,17 @@ function App() {
     );
   }
 
+  if (!user) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 dark:from-gray-900 dark:via-gray-900/80 dark:to-gray-900">
+        <h1 className="text-3xl font-bold mb-6 gradient-text text-shadow-sm">Workout Tracker</h1>
+        <GoogleSignInButton />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 animate-fade-in">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 dark:from-gray-900 dark:via-gray-900/80 dark:to-gray-900 animate-fade-in">
       {/* Enhanced Header with improved animations */}
       <div className="glass shadow-soft sticky top-0 z-10 border-b border-white/20 animate-slide-down">
         <div className="max-w-md mx-auto mobile-padding py-4 sm:py-6">
@@ -82,15 +117,28 @@ function App() {
               <h1 className="text-2xl sm:text-3xl font-bold gradient-text text-shadow-sm animate-float">
                 Workout Tracker
               </h1>
-              <p className="text-xs sm:text-sm text-gray-600 mt-1 smooth-colors">Track your fitness journey</p>
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mt-1 smooth-colors">Track your fitness journey</p>
             </div>
-            <button
+            <div className="flex items-center">
+              <ThemeToggle />
+              <button
               onClick={() => setShowAddModal(true)}
+              aria-label="Add workout"
+              title="Add workout"
               className="group relative bg-gradient-to-r from-blue-500 to-blue-600 text-white p-3 rounded-full shadow-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-glow-blue focus-ring animate-bounce-gentle"
             >
               <FiPlus size={24} className="transition-transform duration-200 group-hover:rotate-90" />
               <div className="absolute inset-0 rounded-full bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            </button>
+              </button>
+              {user && (
+                <button
+                  onClick={() => signOut(auth)}
+                  className="ml-3 px-3 py-1.5 rounded bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs font-semibold hover:bg-gray-300 dark:hover:bg-gray-700 transition-all"
+                >
+                  Sign Out
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Enhanced Stats with staggered animations */}
@@ -123,6 +171,29 @@ function App() {
               <div className="text-2xs sm:text-xs text-orange-600 font-medium">Today's Plan</div>
             </div>
           </div>
+
+          {/* Filters */}
+          <div className="mt-4 flex items-center gap-2">
+            {[
+              { key: 'all', label: 'All' },
+              { key: 'today', label: "Today's" },
+              { key: 'completed', label: 'Completed' },
+            ].map(({ key, label }) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setFilter(key)}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 focus-ring ${
+                  filter === key
+                    ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                }`}
+                aria-pressed={filter === key}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -149,7 +220,7 @@ function App() {
           </div>
         ) : (
           <div className="space-y-4">
-            {workouts
+            {filteredWorkouts
               .sort((a, b) => new Date(b.date) - new Date(a.date))
               .map((workout, index) => (
                 <div
