@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { FiPlus, FiActivity, FiTrendingUp, FiDroplet } from 'react-icons/fi';
+import { FiPlus, FiActivity, FiTrendingUp, FiDroplet, FiHelpCircle } from 'react-icons/fi';
 import WorkoutCard from './components/WorkoutCard';
 import WorkoutDetails from './components/WorkoutDetails';
 import AddWorkoutModal from './components/AddWorkoutModal';
+import Help from './components/Help';
 import ThemeToggle from './components/ThemeToggle';
 import GoogleSignInButton from './components/GoogleSignInButton';
 import { auth } from './firebase';
@@ -15,7 +16,7 @@ function App() {
   const [workouts, setWorkouts] = useState([]);
   const [selectedWorkout, setSelectedWorkout] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [currentView, setCurrentView] = useState('list'); // 'list' or 'details'
+  const [currentView, setCurrentView] = useState('list'); // 'list' | 'details' | 'help'
   const [filter, setFilter] = useState('all'); // all | today | completed
   const [filterDate, setFilterDate] = useState(''); // optional date filter (YYYY-MM-DD)
   const [user, setUser] = useState(null);
@@ -60,6 +61,13 @@ function App() {
     // Reflect navigation in URL for browser back/forward gestures
     try {
       window.location.hash = `workout/${encodeURIComponent(workout.id)}`;
+    } catch (_) {}
+  };
+
+  const handleOpenHelp = () => {
+    setCurrentView('help');
+    try {
+      window.location.hash = 'help';
     } catch (_) {}
   };
 
@@ -169,6 +177,10 @@ function App() {
   useEffect(() => {
     const applyHashRoute = () => {
       const hash = (window.location.hash || '').replace(/^#/, '');
+      if (hash === 'help') {
+        setCurrentView('help');
+        return;
+      }
       if (hash.startsWith('workout/')) {
         const id = decodeURIComponent(hash.split('/')[1] || '');
         const w = workouts.find(x => x.id === id);
@@ -199,9 +211,14 @@ function App() {
     );
   }
 
+  if (currentView === 'help') {
+    return <Help onBack={handleBackToList} />;
+  }
+
   if (!user) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 dark:from-gray-900 dark:via-gray-900/80 dark:to-gray-900">
+        <img src="/bloodlogo.png" alt="Site logo" className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl shadow-lg mb-4" />
         <h1 className="text-3xl font-bold mb-6 gradient-text text-shadow-sm">Workout Tracker</h1>
         <GoogleSignInButton />
       </div>
@@ -215,21 +232,24 @@ function App() {
         <div className="max-w-md mx-auto mobile-padding py-4 sm:py-6">
           <div className="flex items-center justify-between mb-4 sm:mb-6">
             <div className="animate-slide-up flex-1 pr-3">
-              <h1 className="text-2xl sm:text-3xl font-bold gradient-text text-shadow-sm animate-float">
-                Workout Tracker
-              </h1>
+              <div className="flex items-center gap-3">
+                <img src="/bloodlogo.png" alt="Site logo" className="w-8 h-8 sm:w-10 sm:h-10 rounded-md shadow-sm" />
+                <h1 className="text-2xl sm:text-3xl font-bold gradient-text text-shadow-sm animate-float">
+                  Workout Tracker
+                </h1>
+              </div>
               <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mt-1 smooth-colors">Track your fitness journey</p>
             </div>
             <div className="flex items-center">
               <ThemeToggle />
               <button
-              onClick={() => setShowAddModal(true)}
-              aria-label="Add workout"
-              title="Add workout"
-              className="group relative bg-gradient-to-r from-blue-500 to-blue-600 text-white p-3 rounded-full shadow-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-glow-blue focus-ring animate-bounce-gentle"
-            >
-              <FiPlus size={24} className="transition-transform duration-200 group-hover:rotate-90" />
-              <div className="absolute inset-0 rounded-full bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                onClick={() => setShowAddModal(true)}
+                aria-label="Add workout"
+                title="Add workout"
+                className="group relative bg-gradient-to-r from-blue-500 to-blue-600 text-white p-3 rounded-full shadow-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-glow-blue focus-ring animate-bounce-gentle"
+              >
+                <FiPlus size={24} className="transition-transform duration-200 group-hover:rotate-90" />
+                <div className="absolute inset-0 rounded-full bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </button>
               {user && (
                 <button
@@ -239,6 +259,14 @@ function App() {
                   Sign Out
                 </button>
               )}
+              <button
+                onClick={handleOpenHelp}
+                aria-label="Help"
+                title="Help"
+                className="ml-3 p-3 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all hover:scale-105 focus-ring"
+              >
+                <FiHelpCircle size={20} />
+              </button>
             </div>
           </div>
 
