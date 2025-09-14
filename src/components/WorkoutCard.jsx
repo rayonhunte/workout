@@ -8,15 +8,17 @@ const WorkoutCard = ({ workout, onSelect, onToggleComplete, onDelete }) => {
   const progress = totalExercises > 0 ? (completedExercises / totalExercises) * 100 : 0;
 
   return (
-    <div 
+    <div
       className={`group relative card-interactive p-5 mb-4 border-l-4 overflow-hidden transition-all duration-300 hover:shadow-strong hover:-translate-y-2 hover:scale-[1.02] ${
-        workout.completed ? 'border-green-500 bg-gradient-to-r from-green-50 to-green-100/50 hover:shadow-glow-green' : 
-        isToday(workout.date) ? 'border-blue-500 bg-gradient-to-r from-blue-50 to-blue-100/50 hover:shadow-glow-blue' : 'border-gray-300 hover:border-blue-400'
-      } dark:bg-gray-800/80 dark:border-gray-700`}
+        workout.completed
+          ? 'border-green-500 hover:shadow-glow-green'
+          : isToday(workout.date)
+          ? 'border-blue-500 hover:shadow-glow-blue'
+          : 'border-gray-300 hover:border-blue-400'
+      } bg-white dark:bg-gray-800 dark:border-gray-700`}
       onClick={() => onSelect(workout)}
     >
-      {/* Subtle background animation overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-out pointer-events-none"></div>
+      {/* Removed gradient overlay for better text readability */}
       
       <div className="relative z-10 flex justify-between items-start mb-4">
         <div className="flex-1 pr-4">
@@ -59,9 +61,7 @@ const WorkoutCard = ({ workout, onSelect, onToggleComplete, onDelete }) => {
             }`}
           >
             <FiCheckCircle size={22} className="transition-transform duration-200 group-hover/btn:rotate-12" />
-            {workout.completed && (
-              <div className="absolute inset-0 rounded-full border-2 border-green-400 animate-ping opacity-75"></div>
-            )}
+            {/* Remove pulsing ring when completed */}
           </button>
         </div>
       </div>

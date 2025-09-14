@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FiPlus, FiActivity, FiTrendingUp } from 'react-icons/fi';
+import { FiPlus, FiActivity, FiTrendingUp, FiDroplet } from 'react-icons/fi';
 import WorkoutCard from './components/WorkoutCard';
 import WorkoutDetails from './components/WorkoutDetails';
 import AddWorkoutModal from './components/AddWorkoutModal';
@@ -9,6 +9,7 @@ import { auth } from './firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 
 import { listenUserWorkouts, addUserWorkout, updateUserWorkout, deleteUserWorkout } from './utils/firestoreWorkouts';
+import { addUserTemplate } from './utils/firestoreTemplates';
 
 function App() {
   const [workouts, setWorkouts] = useState([]);
@@ -16,6 +17,7 @@ function App() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [currentView, setCurrentView] = useState('list'); // 'list' or 'details'
   const [filter, setFilter] = useState('all'); // all | today | completed
+  const [filterDate, setFilterDate] = useState(''); // optional date filter (YYYY-MM-DD)
   const [user, setUser] = useState(null);
 
   // Replace localStorage logic with Firestore sync
@@ -55,17 +57,35 @@ function App() {
   const handleSelectWorkout = (workout) => {
     setSelectedWorkout(workout);
     setCurrentView('details');
+    // Reflect navigation in URL for browser back/forward gestures
+    try {
+      window.location.hash = `workout/${encodeURIComponent(workout.id)}`;
+    } catch (_) {}
   };
 
   const handleBackToList = () => {
     setSelectedWorkout(null);
     setCurrentView('list');
+    // Prefer using browser back to preserve history UX
+    try {
+      if ((window.location.hash || '').startsWith('#workout/')) {
+        window.history.back();
+      } else if (window.location.hash) {
+        window.location.hash = '';
+      }
+    } catch (_) {}
   };
 
   // Add workout to Firestore
   const handleAddWorkout = async (newWorkout) => {
     if (!user) return;
     await addUserWorkout(user.uid, newWorkout);
+    // Also store as a reusable template for this user
+    try {
+      await addUserTemplate(user.uid, newWorkout);
+    } catch (e) {
+      console.warn('Failed to save template:', e);
+    }
   };
 
   // Update workout in Firestore
@@ -106,21 +126,67 @@ function App() {
     total: workouts.length,
     completed: workouts.filter(w => w.completed).length,
     today: workouts.filter(w => {
-      const today = new Date().toDateString();
-      const workoutDate = new Date(w.date).toDateString();
-      return today === workoutDate;
-    }).length
+      const today = new Date();
+      const todayStr = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toDateString();
+      // Treat stored YYYY-MM-DD as local date by appending T00:00:00
+      const workoutDate = new Date(`${w.date}T00:00:00`).toDateString();
+      return todayStr === workoutDate;
+    }).length,
+    // Average blood sugar report (ignores null/empty values)
+    avgBefore: (() => {
+      const values = workouts.map(w => w?.bloodSugar?.before).filter(v => v !== null && v !== undefined && !Number.isNaN(v));
+      if (!values.length) return null;
+      const sum = values.reduce((a, b) => a + Number(b), 0);
+      return Math.round(sum / values.length);
+    })(),
+    avgAfter: (() => {
+      const values = workouts.map(w => w?.bloodSugar?.after).filter(v => v !== null && v !== undefined && !Number.isNaN(v));
+      if (!values.length) return null;
+      const sum = values.reduce((a, b) => a + Number(b), 0);
+      return Math.round(sum / values.length);
+    })(),
   };
 
   const filteredWorkouts = workouts.filter((w) => {
+    const wDateStr = new Date(`${w.date}T00:00:00`).toDateString();
+    const selectedDateMatch = filterDate
+      ? wDateStr === new Date(`${filterDate}T00:00:00`).toDateString()
+      : true;
+
     if (filter === 'today') {
-      return new Date(w.date).toDateString() === new Date().toDateString();
+      const today = new Date();
+      const todayStr = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toDateString();
+      return wDateStr === todayStr;
     }
     if (filter === 'completed') {
-      return w.completed;
+      return w.completed && selectedDateMatch;
     }
-    return true;
+    // 'all'
+    return selectedDateMatch;
   });
+
+  // Listen to hash changes to support browser back/forward
+  useEffect(() => {
+    const applyHashRoute = () => {
+      const hash = (window.location.hash || '').replace(/^#/, '');
+      if (hash.startsWith('workout/')) {
+        const id = decodeURIComponent(hash.split('/')[1] || '');
+        const w = workouts.find(x => x.id === id);
+        if (w) {
+          setSelectedWorkout(w);
+          setCurrentView('details');
+        } else {
+          // If workout list not yet loaded, keep view as list; listener will set when available
+        }
+      } else {
+        setSelectedWorkout(null);
+        setCurrentView('list');
+      }
+    };
+    applyHashRoute();
+    window.addEventListener('hashchange', applyHashRoute);
+    return () => window.removeEventListener('hashchange', applyHashRoute);
+  }, [workouts]);
 
   if (currentView === 'details' && selectedWorkout) {
     return (
@@ -176,7 +242,7 @@ function App() {
             </div>
           </div>
 
-          {/* Enhanced Stats with staggered animations */}
+          {/* Enhanced Stats with staggered animations (Row 1 of 3 items) */}
           <div className="grid grid-cols-3 gap-2 sm:gap-3">
             <div className="card-interactive bg-gradient-to-br from-blue-50 to-blue-100 p-3 sm:p-4 text-center border border-blue-200/50 hover:shadow-glow-blue animate-slide-up animate-delay-100 group">
               <div className="flex items-center justify-center text-blue-500 mb-1 sm:mb-2">
@@ -207,6 +273,36 @@ function App() {
             </div>
           </div>
 
+          {/* Stats Row 2 (3 items max) */}
+          <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-2">
+            {/* Blood Sugar Report (full width on all sizes) */}
+            <div className="card-interactive col-span-3 bg-gradient-to-br from-rose-50 to-rose-100 p-2 sm:p-3 border border-rose-200/50 hover:shadow-glow-purple animate-slide-up animate-delay-200 group w-full">
+              <div className="flex items-center justify-between gap-2 min-w-0">
+                <div className="flex items-center text-rose-600 font-semibold text-[11px] sm:text-xs shrink-0">
+                  <div className="mr-2 p-1 sm:p-1.5 bg-rose-500 text-white rounded-lg shadow-md group-hover:shadow-lg transition-all duration-300 group-hover:scale-110">
+                    <FiDroplet size={14} className="sm:w-[16px] sm:h-[16px]" />
+                  </div>
+                  <span className="whitespace-nowrap">Blood Sugar</span>
+                </div>
+                <div className="flex items-center gap-2 text-[11px] sm:text-xs text-rose-700 leading-tight truncate">
+                  {(() => {
+                    const hasAny = stats.avgBefore !== null || stats.avgAfter !== null;
+                    const before = stats.avgBefore !== null ? `B: ${stats.avgBefore}` : 'B: —';
+                    const after = stats.avgAfter !== null ? `A: ${stats.avgAfter}` : 'A: —';
+                    const unit = hasAny ? ' mg/dL' : '';
+                    return (
+                      <>
+                        <span className="whitespace-nowrap">{before}</span>
+                        <span className="opacity-40">•</span>
+                        <span className="whitespace-nowrap">{after}{unit}</span>
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Filters */}
           <div className="mt-4 flex items-center gap-2">
             {[
@@ -234,6 +330,29 @@ function App() {
 
       {/* Enhanced Workout List with improved animations */}
       <div className="max-w-md mx-auto mobile-padding py-4 sm:py-6">
+        {/* Date filter row (compact) */}
+        <div className="flex items-center justify-between mb-3">
+          <label className="text-xs font-semibold text-gray-600 dark:text-gray-300 mr-2">Date</label>
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              value={filterDate}
+              onChange={(e) => setFilterDate(e.target.value)}
+              className="input-base px-3 py-1.5 text-xs font-semibold w-auto"
+              aria-label="Filter by date"
+            />
+            {filterDate && (
+              <button
+                type="button"
+                onClick={() => setFilterDate('')}
+                className="px-2 py-1.5 rounded-full text-xs font-semibold border bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 focus-ring"
+                title="Clear date filter"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        </div>
         {workouts.length === 0 ? (
           <div className="text-center py-16 animate-fade-in">
             <div className="bg-gradient-to-br from-blue-100 to-purple-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 border border-blue-200 shadow-soft animate-float hover:shadow-glow-blue transition-all duration-300 hover:scale-110">
@@ -280,6 +399,7 @@ function App() {
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
         onAddWorkout={handleAddWorkout}
+        uid={user ? user.uid : undefined}
       />
     </div>
   );

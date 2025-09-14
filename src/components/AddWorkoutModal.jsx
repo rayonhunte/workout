@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogPanel,
@@ -8,18 +8,28 @@ import {
 } from "@headlessui/react";
 import { FiPlus, FiTrash2, FiX } from "react-icons/fi";
 import { workoutTemplates } from "../data/workouts";
+import { listenUserTemplates } from "../utils/firestoreTemplates";
 import { generateId } from "../utils/helpers";
 
-const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout }) => {
+const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout, uid }) => {
   const [workoutName, setWorkoutName] = useState("");
   const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split("T")[0]
+    // Use local timezone date string (YYYY-MM-DD)
+    new Date().toLocaleDateString('en-CA')
   );
   const [exercises, setExercises] = useState([{ name: "", sets: 1, reps: "" }]);
   const [selectedTemplate, setSelectedTemplate] = useState("");
+  const [userTemplates, setUserTemplates] = useState([]);
+
+  useEffect(() => {
+    if (!uid) return;
+    const unsub = listenUserTemplates(uid, (templates) => setUserTemplates(templates));
+    return () => unsub && unsub();
+  }, [uid]);
 
   const addExercise = () => {
-  setExercises([{ name: "", sets: 1, reps: "" }, ...exercises]);
+    // Append so numbering increases (1, 2, 3, ...)
+    setExercises([...exercises, { name: "", sets: 1, reps: "" }]);
   };
 
   const removeExercise = (index) => {
@@ -75,7 +85,7 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout }) => {
 
   const resetForm = () => {
     setWorkoutName("");
-    setSelectedDate(new Date().toISOString().split("T")[0]);
+    setSelectedDate(new Date().toLocaleDateString('en-CA'));
     setExercises([{ name: "", sets: 1, reps: "" }]);
     setSelectedTemplate("");
   };
@@ -204,6 +214,59 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout }) => {
                     ))}
                   </div>
                 </div>
+
+                {/* My Templates (Saved) */}
+                {userTemplates.length > 0 && (
+                  <div className="mb-6">
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
+                      My Templates
+                    </label>
+                    <div className="grid grid-cols-1 gap-3">
+                      {userTemplates.map((template) => (
+                        <button
+                          key={template.id}
+                          type="button"
+                          onClick={() => loadTemplate(template)}
+                          className={`group relative text-left p-5 border-2 rounded-xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] ${
+                            selectedTemplate === template.name
+                              ? "border-blue-500 bg-white dark:bg-gray-800 shadow-xl scale-[1.02]"
+                              : "border-gray-200 dark:border-gray-700 hover:border-blue-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:shadow-lg"
+                          }`}
+                        >
+                          {selectedTemplate === template.name && (
+                            <div className="absolute top-3 right-3 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center shadow-lg">
+                              <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            </div>
+                          )}
+                          <div className="pr-8">
+                            <div className={`font-bold text-lg mb-2 ${
+                              selectedTemplate === template.name ? 'text-blue-800 dark:text-blue-200' : 'text-gray-800 dark:text-gray-100'
+                            }`}>
+                              {template.name}
+                            </div>
+                            <div className="text-sm mb-3 text-gray-600 dark:text-gray-300">
+                              {template.exercises.length} exercises
+                            </div>
+                            <div className="space-y-1">
+                              {template.exercises.slice(0, 2).map((exercise, exerciseIndex) => (
+                                <div key={exerciseIndex} className="text-xs px-2 py-1 rounded-md inline-block mr-2 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
+                                  {exercise.name}
+                                </div>
+                              ))}
+                              {template.exercises.length > 2 && (
+                                <div className="text-xs px-2 py-1 rounded-md inline-block bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
+                                  +{template.exercises.length - 2} more
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Enhanced Workout Name */}
                 <div className="mb-6 animate-slide-up animate-delay-100">

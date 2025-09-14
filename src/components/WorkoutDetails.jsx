@@ -19,8 +19,8 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout, onDelete }) => {
     setLocalWorkout({
       ...localWorkout,
       exercises: [
-        { name: "", sets: 1, reps: "", completed: false },
         ...localWorkout.exercises,
+        { name: "", sets: 1, reps: "", completed: false },
       ],
     });
   };
@@ -73,8 +73,8 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout, onDelete }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 dark:from-gray-900 dark:via-gray-900/80 dark:to-gray-900 animate-fade-in">
-      {/* Enhanced Header (part of normal flow, not sticky) */}
-      <div className="glass shadow-soft border-b border-white/20 animate-slide-down">
+      {/* Header uses solid dark background for readability */}
+      <div className="bg-gray-800 text-white shadow-soft border-b border-gray-700 animate-slide-down">
         <div className="max-w-md mx-auto mobile-padding py-4 sm:py-6">
           <div className="flex items-center mb-4 animate-slide-up">
             <button
@@ -85,7 +85,7 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout, onDelete }) => {
             >
               <FiArrowLeft
                 size={20}
-                className="text-gray-600 group-hover:text-gray-700 transition-all duration-300 group-hover:-translate-x-1"
+                className="text-gray-700 dark:text-gray-100 group-hover:text-gray-900 dark:group-hover:text-white transition-all duration-300 group-hover:-translate-x-1"
               />
             </button>
             <div className="flex-1">
@@ -107,10 +107,10 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout, onDelete }) => {
                 </div>
               ) : (
                 <>
-                  <h1 className="text-2xl font-bold gradient-text text-shadow-sm">
+                  <h1 className="text-2xl font-bold text-white">
                     {localWorkout.name}
                   </h1>
-                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 smooth-colors">
+                  <p className="text-sm text-gray-200 mt-1 smooth-colors">
                     {formatDate(localWorkout.date)}
                   </p>
                 </>
@@ -203,7 +203,7 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout, onDelete }) => {
                   value={bloodSugarBefore}
                   onChange={(e) => setBloodSugarBefore(e.target.value)}
                   placeholder="Enter blood sugar level"
-                  className="input-base px-5 py-4 text-lg font-medium placeholder-gray-400 bg-gradient-to-br from-gray-50 to-white group-hover:bg-white hover:border-blue-300"
+                  className="input-base px-5 py-4 text-lg font-medium bg-gradient-to-br from-gray-50 to-white group-hover:bg-white hover:border-blue-300 dark:bg-gradient-to-br dark:from-gray-800 dark:to-gray-900"
                 />
                 {bloodSugarBefore && (
                   <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
@@ -243,7 +243,7 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout, onDelete }) => {
                   value={bloodSugarAfter}
                   onChange={(e) => setBloodSugarAfter(e.target.value)}
                   placeholder="Enter blood sugar level"
-                  className="input-base px-5 py-4 text-lg font-medium placeholder-gray-400 bg-gradient-to-br from-gray-50 to-white group-hover:bg-white hover:border-green-300"
+                  className="input-base px-5 py-4 text-lg font-medium bg-gradient-to-br from-gray-50 to-white group-hover:bg-white hover:border-green-300 dark:bg-gradient-to-br dark:from-gray-800 dark:to-gray-900"
                 />
                 {bloodSugarAfter && (
                   <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
@@ -464,14 +464,14 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout, onDelete }) => {
                   {!isEditing && (
                     <button
                       onClick={() => toggleExercise(index)}
-                      className={`relative flex items-center justify-center w-14 h-14 rounded-xl border-2 transition-all duration-300 hover:scale-110 active:scale-95 focus-ring group/checkbox ${
+                      className={`relative flex items-center justify-center w-[3.15rem] h-[3.15rem] rounded-xl border-2 transition-all duration-300 hover:scale-110 active:scale-95 focus-ring group/checkbox ${
                         exercise.completed
                           ? "bg-green-500 border-green-500 text-white shadow-lg shadow-green-200/50 hover:bg-green-600 hover:border-green-600 hover:shadow-glow-green"
                           : "bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-400 hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-gray-800 hover:shadow-md group-hover:border-blue-300"
                       }`}
                     >
                       <FiCheck
-                        size={22}
+                        size={20}
                         className={`transition-all duration-300 ${
                           exercise.completed
                             ? "scale-100 opacity-100"
@@ -479,10 +479,7 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout, onDelete }) => {
                         }`}
                       />
 
-                      {/* Enhanced Completion Animation Ring */}
-                      {exercise.completed && (
-                        <div className="absolute inset-0 rounded-xl border-2 border-green-400 animate-ping opacity-75"></div>
-                      )}
+                      {/* Completion ring removed to avoid pulsing effect */}
 
                       {/* Hover glow effect */}
                       <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400/20 to-purple-400/20 opacity-0 group-hover/checkbox:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
@@ -508,15 +505,15 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout, onDelete }) => {
               onClick={() => onDelete(workout.id)}
               aria-label="Delete workout"
               title="Delete workout"
-              className="group relative bg-gradient-to-r from-red-500 via-red-600 to-red-700 hover:from-red-600 hover:via-red-700 hover:to-red-800 text-white py-6 px-6 rounded-2xl font-bold text-lg flex items-center justify-center transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-strong hover:shadow-glow-red border border-red-400/20 hover:border-red-400/30 overflow-hidden focus-ring"
+              className="group relative bg-gradient-to-r from-red-500 via-red-600 to-red-700 hover:from-red-600 hover:via-red-700 hover:to-red-800 text-white py-[1.35rem] px-[1.35rem] rounded-2xl font-bold text-lg flex items-center justify-center transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-strong hover:shadow-glow-red border border-red-400/20 hover:border-red-400/30 overflow-hidden focus-ring"
             >
               {/* Enhanced Animated Background Gradient */}
               <div className="absolute inset-0 bg-gradient-to-r from-red-400/20 via-red-400/20 to-red-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
 
               {/* Enhanced Icon with styling */}
               <div className="relative z-10 flex items-center">
-                <div className="p-2.5 bg-white/20 rounded-xl group-hover:bg-white/30 transition-all duration-300 group-hover:scale-110 shadow-md">
-                  <FiTrash2 size={24} className="drop-shadow-sm" />
+                <div className="p-2 bg-white/20 rounded-xl group-hover:bg-white/30 transition-all duration-300 group-hover:scale-110 shadow-md">
+                  <FiTrash2 size={22} className="drop-shadow-sm" />
                 </div>
               </div>
 
@@ -528,15 +525,15 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout, onDelete }) => {
               onClick={saveWorkout}
               aria-label="Save workout"
               title="Save workout"
-              className="group relative flex-1 bg-gradient-to-r from-blue-500 via-blue-600 to-purple-600 hover:from-blue-600 hover:via-purple-600 hover:to-purple-700 text-white py-6 px-8 rounded-2xl font-bold text-lg flex items-center justify-center transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-strong hover:shadow-glow-purple border border-blue-400/20 hover:border-purple-400/30 overflow-hidden focus-ring"
+              className="group relative flex-1 bg-gradient-to-r from-blue-500 via-blue-600 to-purple-600 hover:from-blue-600 hover:via-purple-600 hover:to-purple-700 text-white py-[1.35rem] px-[1.8rem] rounded-2xl font-bold text-lg flex items-center justify-center transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-strong hover:shadow-glow-purple border border-blue-400/20 hover:border-purple-400/30 overflow-hidden focus-ring"
             >
               {/* Enhanced Animated Background Gradient */}
               <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 via-purple-400/20 to-blue-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
 
               {/* Enhanced Icon with styling */}
               <div className="relative z-10 flex items-center">
-                <div className="p-2.5 bg-white/20 rounded-xl mr-4 group-hover:bg-white/30 transition-all duration-300 group-hover:scale-110 shadow-md">
-                  <FiSave size={24} className="drop-shadow-sm" />
+                <div className="p-2 bg-white/20 rounded-xl mr-4 group-hover:bg-white/30 transition-all duration-300 group-hover:scale-110 shadow-md">
+                  <FiSave size={22} className="drop-shadow-sm" />
                 </div>
                 <span className="drop-shadow-sm tracking-wide text-xl">
                   {isEditing ? 'Save Changes' : 'Save Workout'}
