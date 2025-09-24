@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Dialog,
   DialogPanel,
@@ -6,12 +6,12 @@ import {
   Transition,
   TransitionChild,
 } from "@headlessui/react";
-import { FiPlus, FiTrash2, FiX } from "react-icons/fi";
+import { FiPlus, FiTrash2, FiX, FiChevronDown } from "react-icons/fi";
 import { workoutTemplates } from "../data/workouts";
 import { listenUserTemplates } from "../utils/firestoreTemplates";
 import { generateId } from "../utils/helpers";
 
-const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout, uid }) => {
+const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout, uid, initialTemplate }) => {
   const [workoutName, setWorkoutName] = useState("");
   const [selectedDate, setSelectedDate] = useState(
     // Use local timezone date string (YYYY-MM-DD)
@@ -20,6 +20,9 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout, uid }) => {
   const [exercises, setExercises] = useState([{ name: "", sets: 1, reps: "" }]);
   const [selectedTemplate, setSelectedTemplate] = useState("");
   const [userTemplates, setUserTemplates] = useState([]);
+  const [templateSearch, setTemplateSearch] = useState("");
+  const [showDefaults, setShowDefaults] = useState(true);
+  const [showMine, setShowMine] = useState(true);
 
   useEffect(() => {
     if (!uid) return;
@@ -52,6 +55,13 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout, uid }) => {
     setExercises(template.exercises.map((ex) => ({ ...ex, completed: false })));
     setSelectedTemplate(template.name);
   };
+
+  // Preload a template when provided from parent (search selection)
+  useEffect(() => {
+    if (isOpen && initialTemplate && initialTemplate.name && Array.isArray(initialTemplate.exercises)) {
+      loadTemplate(initialTemplate);
+    }
+  }, [isOpen, initialTemplate]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -88,7 +98,38 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout, uid }) => {
     setSelectedDate(new Date().toLocaleDateString('en-CA'));
     setExercises([{ name: "", sets: 1, reps: "" }]);
     setSelectedTemplate("");
+    setTemplateSearch("");
   };
+
+  // Filter default and user templates based on search query
+  const filteredDefaultTemplates = useMemo(() => {
+    const q = templateSearch.trim().toLowerCase();
+    if (!q) return workoutTemplates.slice(0, 3);
+    const matches = (t) =>
+      (t.name || "").toLowerCase().includes(q) ||
+      (Array.isArray(t.exercises) && t.exercises.some(ex => (ex.name || "").toLowerCase().includes(q)));
+    return workoutTemplates.filter(matches);
+  }, [templateSearch]);
+
+  const filteredUserTemplates = useMemo(() => {
+    const q = templateSearch.trim().toLowerCase();
+    if (!q) {
+      // sort by createdAt desc and return last 3
+      const toMillis = (ts) => {
+        if (!ts) return 0;
+        if (typeof ts.toMillis === 'function') return ts.toMillis();
+        if (typeof ts.seconds === 'number') return ts.seconds * 1000;
+        const d = new Date(ts);
+        return isNaN(d.getTime()) ? 0 : d.getTime();
+      };
+      const sorted = [...userTemplates].sort((a, b) => (toMillis(b.createdAt) - toMillis(a.createdAt)));
+      return sorted.slice(0, 3);
+    }
+    const matches = (t) =>
+      (t.name || "").toLowerCase().includes(q) ||
+      (Array.isArray(t.exercises) && t.exercises.some(ex => (ex.name || "").toLowerCase().includes(q)));
+    return userTemplates.filter(matches);
+  }, [userTemplates, templateSearch]);
 
   return (
     <Transition show={isOpen}>
@@ -135,13 +176,35 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout, uid }) => {
               </div>
 
               <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                {/* Template Search */}
+                <div className="mb-4">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                    Search Templates
+                  </label>
+                  <input
+                    type="text"
+                    value={templateSearch}
+                    onChange={(e) => setTemplateSearch(e.target.value)}
+                    placeholder="Search by name or exercise..."
+                    className="input-base w-full px-4 py-3"
+                    aria-label="Search workout templates"
+                  />
+                </div>
                 {/* Workout Templates */}
                 <div className="mb-6">
-                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
-                    Quick Templates
-                  </label>
-                  <div className="grid grid-cols-1 gap-3">
-                    {workoutTemplates.map((template, index) => (
+                  <button
+                    type="button"
+                    className="w-full flex items-center justify-between text-left text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3"
+                    onClick={() => setShowDefaults(v => !v)}
+                    aria-expanded={showDefaults}
+                    aria-controls="quick-templates-panel"
+                  >
+                    <span>Quick Templates</span>
+                    <FiChevronDown className={`transition-transform ${showDefaults ? 'rotate-0' : '-rotate-90'}`} />
+                  </button>
+                  {showDefaults && (
+                    <div id="quick-templates-panel" className="grid grid-cols-1 gap-3">
+                      {filteredDefaultTemplates.map((template, index) => (
                       <button
                         key={index}
                         type="button"
@@ -212,17 +275,26 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout, uid }) => {
                         }`} />
                       </button>
                     ))}
-                  </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* My Templates (Saved) */}
-                {userTemplates.length > 0 && (
+                {filteredUserTemplates.length > 0 && (
                   <div className="mb-6">
-                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
-                      My Templates
-                    </label>
-                    <div className="grid grid-cols-1 gap-3">
-                      {userTemplates.map((template) => (
+                    <button
+                      type="button"
+                      className="w-full flex items-center justify-between text-left text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3"
+                      onClick={() => setShowMine(v => !v)}
+                      aria-expanded={showMine}
+                      aria-controls="my-templates-panel"
+                    >
+                      <span>My Templates</span>
+                      <FiChevronDown className={`transition-transform ${showMine ? 'rotate-0' : '-rotate-90'}`} />
+                    </button>
+                    {showMine && (
+                      <div id="my-templates-panel" className="grid grid-cols-1 gap-3">
+                        {filteredUserTemplates.map((template) => (
                         <button
                           key={template.id}
                           type="button"
@@ -264,7 +336,8 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout, uid }) => {
                           </div>
                         </button>
                       ))}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 )}
 

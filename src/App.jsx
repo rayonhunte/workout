@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { FiPlus, FiActivity, FiTrendingUp, FiDroplet, FiHelpCircle } from 'react-icons/fi';
 import WorkoutCard from './components/WorkoutCard';
 import WorkoutDetails from './components/WorkoutDetails';
@@ -20,6 +20,7 @@ function App() {
   const [filter, setFilter] = useState('all'); // all | today | completed
   const [filterDate, setFilterDate] = useState(''); // optional date filter (YYYY-MM-DD)
   const [user, setUser] = useState(null);
+  const [initialTemplateForModal, setInitialTemplateForModal] = useState(null);
 
   // Replace localStorage logic with Firestore sync
   useEffect(() => {
@@ -55,20 +56,25 @@ function App() {
     };
   }, [showAddModal]);
 
+
   const handleSelectWorkout = (workout) => {
     setSelectedWorkout(workout);
     setCurrentView('details');
     // Reflect navigation in URL for browser back/forward gestures
     try {
       window.location.hash = `workout/${encodeURIComponent(workout.id)}`;
-    } catch (_) {}
+    } catch {
+      // ignore
+    }
   };
 
   const handleOpenHelp = () => {
     setCurrentView('help');
     try {
       window.location.hash = 'help';
-    } catch (_) {}
+    } catch {
+      // ignore
+    }
   };
 
   const handleBackToList = () => {
@@ -81,7 +87,9 @@ function App() {
       } else if (window.location.hash) {
         window.location.hash = '';
       }
-    } catch (_) {}
+    } catch {
+      // ignore
+    }
   };
 
   // Add workout to Firestore
@@ -172,6 +180,14 @@ function App() {
     // 'all'
     return selectedDateMatch;
   });
+
+  const sortedWorkouts = useMemo(() => {
+    return [...filteredWorkouts].sort((a, b) => new Date(b.date) - new Date(a.date));
+  }, [filteredWorkouts]);
+
+  const workoutsToRender = sortedWorkouts;
+
+  // no-op placeholder for backwards compatibility of initialTemplate feature
 
   // Listen to hash changes to support browser back/forward
   useEffect(() => {
@@ -353,6 +369,8 @@ function App() {
               </button>
             ))}
           </div>
+
+          {/* Template search moved into Add Workout modal */}
         </div>
       </div>
 
@@ -402,8 +420,7 @@ function App() {
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredWorkouts
-              .sort((a, b) => new Date(b.date) - new Date(a.date))
+            {workoutsToRender
               .map((workout, index) => (
                 <div
                   key={workout.id}
@@ -425,9 +442,13 @@ function App() {
       {/* Add Workout Modal */}
       <AddWorkoutModal
         isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
+        onClose={() => {
+          setShowAddModal(false);
+          setInitialTemplateForModal(null);
+        }}
         onAddWorkout={handleAddWorkout}
         uid={user ? user.uid : undefined}
+        initialTemplate={initialTemplateForModal}
       />
     </div>
   );

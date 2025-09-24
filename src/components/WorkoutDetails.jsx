@@ -20,7 +20,7 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout, onDelete }) => {
       ...localWorkout,
       exercises: [
         ...localWorkout.exercises,
-        { name: "", sets: 1, reps: "", completed: false },
+        { name: "", sets: 1, reps: "", details: "", completed: false },
       ],
     });
   };
@@ -344,11 +344,11 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout, onDelete }) => {
               </button>
             )}
           </h2>
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {localWorkout.exercises.map((exercise, index) => (
               <div
                 key={index}
-                className={`group relative bg-white dark:bg-gray-900 rounded-xl border-2 p-5 transition-all duration-300 hover:shadow-strong transform hover:-translate-y-2 hover:scale-[1.02] animate-slide-up overflow-hidden ${
+                className={`group relative bg-white dark:bg-gray-900 rounded-xl border-2 p-4 sm:p-5 transition-all duration-300 hover:shadow-strong transform hover:-translate-y-2 hover:scale-[1.02] animate-slide-up overflow-hidden ${
                   exercise.completed
                     ? "border-green-400 bg-gradient-to-br from-green-50 via-green-25 to-white shadow-glow-green/30"
                     : "border-gray-200 hover:border-blue-300 hover:shadow-glow-blue/30"
@@ -367,30 +367,55 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout, onDelete }) => {
                 {/* Subtle background animation overlay */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-out pointer-events-none"></div>
 
-                <div className="relative z-10 flex items-center justify-between">
-                  <div className="flex-1 pr-4">
-                    <div className="flex items-center mb-2">
-                      {/* Enhanced Exercise Number Badge */}
-                      <div
-                        className={`flex items-center justify-center w-10 h-10 rounded-full text-sm font-bold mr-4 transition-all duration-300 shadow-md ${
+                <div className="relative z-10 flex items-start gap-3 sm:gap-4">
+                  {/* Left column: number + checkbox */}
+                  <div className="flex flex-col items-center pt-0.5">
+                    <div
+                      className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full text-xs sm:text-sm font-bold mb-2 transition-all duration-300 shadow-md ${
+                        exercise.completed
+                          ? "bg-green-500 text-white shadow-glow-green/50"
+                          : "bg-gray-100 text-gray-600 group-hover:bg-blue-100 group-hover:text-blue-600 group-hover:shadow-md"
+                      }`}
+                    >
+                      {index + 1}
+                    </div>
+                    {!isEditing && (
+                      <button
+                        onClick={() => toggleExercise(index)}
+                        className={`relative flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-xl border-2 transition-all duration-300 hover:scale-110 active:scale-95 focus-ring group/checkbox ${
                           exercise.completed
-                            ? "bg-green-500 text-white shadow-glow-green/50"
-                            : "bg-gray-100 text-gray-600 group-hover:bg-blue-100 group-hover:text-blue-600 group-hover:shadow-md"
+                            ? "bg-green-500 border-green-500 text-white shadow-lg shadow-green-200/50 hover:bg-green-600 hover:border-green-600 hover:shadow-glow-green"
+                            : "bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-400 hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-gray-800 hover:shadow-md group-hover:border-blue-300"
                         }`}
+                        aria-label={exercise.completed ? 'Mark incomplete' : 'Mark complete'}
                       >
-                        {index + 1}
-                      </div>
+                        <FiCheck
+                          size={18}
+                          className={`transition-all duration-300 ${
+                            exercise.completed
+                              ? "scale-100 opacity-100"
+                              : "scale-75 opacity-60 group-hover:scale-90 group-hover:opacity-80"
+                          }`}
+                        />
+                        <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400/20 to-purple-400/20 opacity-0 group-hover/checkbox:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Right column: content */}
+                  <div className="flex-1 pr-0 sm:pr-2">
+                    <div className="mb-2">
                       {isEditing ? (
                         <input
                           type="text"
                           value={exercise.name}
                           onChange={(e) => updateExercise(index, "name", e.target.value)}
                           placeholder={`Exercise ${index + 1}`}
-                          className="input-base w-full max-w-[60%] px-3 py-2 font-semibold"
+                          className="input-base w-full max-w-full px-3 py-2 font-semibold text-base sm:text-lg"
                         />
                       ) : (
                         <h3
-                          className={`font-bold text-lg transition-all duration-300 text-shadow-sm ${
+                          className={`font-bold text-base sm:text-lg transition-all duration-300 text-shadow-sm ${
                             exercise.completed
                               ? "text-green-800"
                               : "text-gray-800 group-hover:text-gray-900 dark:text-gray-100"
@@ -401,90 +426,73 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout, onDelete }) => {
                       )}
                     </div>
 
-                    {/* Enhanced Exercise Details */}
-                    <div className="ml-14">
-                      {isEditing ? (
-                        <div className="grid grid-cols-2 gap-3 max-w-sm">
-                          <div>
-                            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1 uppercase tracking-wide">Sets</label>
-                            <input
-                              type="number"
-                              min={1}
-                              max={99}
-                              value={exercise.sets}
-                              onChange={(e) => updateExercise(index, "sets", e.target.value)}
-                              className="input-base px-3 py-2 text-center"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1 uppercase tracking-wide">Reps / Duration</label>
-                            <input
-                              type="text"
-                              value={exercise.reps}
-                              onChange={(e) => updateExercise(index, "reps", e.target.value)}
-                              placeholder="15 or 30 sec"
-                              className="input-base px-3 py-2"
-                            />
-                          </div>
-                          <div className="col-span-2 flex justify-end">
-                            <button
-                              type="button"
-                              onClick={() => removeExercise(index)}
-                              className="inline-flex items-center px-3 py-2 rounded-xl text-xs font-semibold text-red-600 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 border border-red-200/60 dark:border-red-800/60 focus-ring"
-                              aria-label="Remove exercise"
-                              title="Remove exercise"
-                            >
-                              <FiTrash2 className="mr-1.5" size={14} /> Remove
-                            </button>
-                          </div>
+                    {/* Exercise details (sets/reps and optional details) */}
+                    {isEditing ? (
+                      <div className="grid grid-cols-2 gap-3 sm:max-w-sm">
+                        <div>
+                          <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1 uppercase tracking-wide">Sets</label>
+                          <input
+                            type="number"
+                            min={1}
+                            max={99}
+                            value={exercise.sets}
+                            onChange={(e) => updateExercise(index, "sets", e.target.value)}
+                            className="input-base px-3 py-2 text-center"
+                          />
                         </div>
-                      ) : (
+                        <div>
+                          <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1 uppercase tracking-wide">Reps / Duration</label>
+                          <input
+                            type="text"
+                            value={exercise.reps}
+                            onChange={(e) => updateExercise(index, "reps", e.target.value)}
+                            placeholder="15 or 30 sec"
+                            className="input-base px-3 py-2"
+                          />
+                        </div>
+                        <div className="col-span-2">
+                          <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1 uppercase tracking-wide">Details (optional)</label>
+                          <textarea
+                            rows={2}
+                            value={exercise.details || ''}
+                            onChange={(e) => updateExercise(index, 'details', e.target.value)}
+                            placeholder="Notes, intervals, weights, tempo…"
+                            className="input-base px-3 py-2 resize-y"
+                          />
+                        </div>
+                        <div className="col-span-2 flex justify-end">
+                          <button
+                            type="button"
+                            onClick={() => removeExercise(index)}
+                            className="inline-flex items-center px-3 py-2 rounded-xl text-xs font-semibold text-red-600 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 border border-red-200/60 dark:border-red-800/60 focus-ring"
+                            aria-label="Remove exercise"
+                            title="Remove exercise"
+                          >
+                            <FiTrash2 className="mr-1.5" size={14} /> Remove
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
                         <div
-                          className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 shadow-sm hover:shadow-md ${
+                          className={`inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-300 shadow-sm hover:shadow-md ${
                             exercise.completed
                               ? "bg-green-100 text-green-700 border border-green-200 hover:bg-green-200"
                               : "bg-gray-100 text-gray-600 border border-gray-200 group-hover:bg-blue-50 group-hover:text-blue-700 group-hover:border-blue-200"
                           }`}
                         >
-                          <span className="font-bold text-base">
-                            {exercise.sets}
-                          </span>
-                          <span className="mx-1.5 text-xs">sets</span>
-                          <span className="mx-1.5 text-xs">×</span>
-                          <span className="font-bold text-base">
-                            {exercise.reps}
-                          </span>
-                          <span className="ml-1.5 text-xs">reps</span>
+                          <span className="font-bold text-sm sm:text-base">{exercise.sets}</span>
+                          <span className="mx-1 sm:mx-1.5 text-[10px] sm:text-xs">sets</span>
+                          <span className="mx-1 sm:mx-1.5 text-[10px] sm:text-xs">×</span>
+                          <span className="font-bold text-sm sm:text-base">{exercise.reps}</span>
+                          <span className="ml-1 sm:ml-1.5 text-[10px] sm:text-xs">reps</span>
                         </div>
-                      )}
-                    </div>
+                        {exercise.details && (
+                          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">{exercise.details}</p>
+                        )}
+                      </div>
+                    )}
                   </div>
-
-                  {/* Enhanced Interactive Checkbox */}
-                  {!isEditing && (
-                    <button
-                      onClick={() => toggleExercise(index)}
-                      className={`relative flex items-center justify-center w-[3.15rem] h-[3.15rem] rounded-xl border-2 transition-all duration-300 hover:scale-110 active:scale-95 focus-ring group/checkbox ${
-                        exercise.completed
-                          ? "bg-green-500 border-green-500 text-white shadow-lg shadow-green-200/50 hover:bg-green-600 hover:border-green-600 hover:shadow-glow-green"
-                          : "bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-400 hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-gray-800 hover:shadow-md group-hover:border-blue-300"
-                      }`}
-                    >
-                      <FiCheck
-                        size={20}
-                        className={`transition-all duration-300 ${
-                          exercise.completed
-                            ? "scale-100 opacity-100"
-                            : "scale-75 opacity-60 group-hover:scale-90 group-hover:opacity-80"
-                        }`}
-                      />
-
-                      {/* Completion ring removed to avoid pulsing effect */}
-
-                      {/* Hover glow effect */}
-                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400/20 to-purple-400/20 opacity-0 group-hover/checkbox:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                    </button>
-                  )}
                 </div>
 
                 {/* Completion Overlay Effect */}
