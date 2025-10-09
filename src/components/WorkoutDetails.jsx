@@ -13,6 +13,31 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout, onDelete }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [exerciseModal, setExerciseModal] = useState(null);
 
+  const parseOptionalNumber = (value) => {
+    if (value === "" || value === null || value === undefined) return null;
+    const numeric = Number(value);
+    return Number.isFinite(numeric) ? numeric : null;
+  };
+
+  const buildWorkoutPayload = (overrides = {}, { recalcCompletion = false } = {}) => {
+    const { bloodSugarReadings: _omitReadings, ...restWorkout } = localWorkout;
+    const nextWorkout = {
+      ...restWorkout,
+      ...overrides,
+      bloodSugar: {
+        before: parseOptionalNumber(bloodSugarBefore),
+        after: parseOptionalNumber(bloodSugarAfter),
+      },
+    };
+    if (recalcCompletion) {
+      nextWorkout.completed = Array.isArray(nextWorkout.exercises)
+        ? nextWorkout.exercises.every((ex) => ex.completed)
+        : false;
+    }
+    return nextWorkout;
+  };
+
+
   const setName = (name) => setLocalWorkout({ ...localWorkout, name });
   const setDate = (date) => setLocalWorkout({ ...localWorkout, date });
 
@@ -53,14 +78,7 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout, onDelete }) => {
   };
 
   const saveWorkout = () => {
-    const updatedWorkout = {
-      ...localWorkout,
-      bloodSugar: {
-        before: bloodSugarBefore ? parseInt(bloodSugarBefore) : null,
-        after: bloodSugarAfter ? parseInt(bloodSugarAfter) : null,
-      },
-      completed: localWorkout.exercises.every((ex) => ex.completed),
-    };
+    const updatedWorkout = buildWorkoutPayload({}, { recalcCompletion: true });
     onUpdateWorkout(updatedWorkout);
     onBack();
   };
@@ -369,6 +387,7 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout, onDelete }) => {
                 </p>
               </div>
             )}
+
           </div>
         </div>
 

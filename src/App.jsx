@@ -6,14 +6,17 @@ import AddWorkoutModal from './components/AddWorkoutModal';
 import Help from './components/Help';
 import ThemeToggle from './components/ThemeToggle';
 import GoogleSignInButton from './components/GoogleSignInButton';
+import BloodSugarTracker from './components/BloodSugarTracker';
 import { auth } from './firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 
 import { listenUserWorkouts, addUserWorkout, updateUserWorkout, deleteUserWorkout } from './utils/firestoreWorkouts';
 import { addUserTemplate } from './utils/firestoreTemplates';
+import { listenBloodSugarReadings, addBloodSugarReading, deleteBloodSugarReading } from './utils/firestoreBloodSugar';
 
 function App() {
   const [workouts, setWorkouts] = useState([]);
+  const [bloodSugarReadings, setBloodSugarReadings] = useState([]);
   const [selectedWorkout, setSelectedWorkout] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [currentView, setCurrentView] = useState('list'); // 'list' | 'details' | 'help'
@@ -21,6 +24,23 @@ function App() {
   const [filterDate, setFilterDate] = useState(''); // optional date filter (YYYY-MM-DD)
   const [user, setUser] = useState(null);
   const [initialTemplateForModal, setInitialTemplateForModal] = useState(null);
+
+  const normalizeWorkout = (workout) => {
+    const safeBloodSugar = workout?.bloodSugar ?? {};
+    return {
+      ...workout,
+      bloodSugar: {
+        before:
+          safeBloodSugar.before !== undefined && safeBloodSugar.before !== null
+            ? Number(safeBloodSugar.before)
+            : null,
+        after:
+          safeBloodSugar.after !== undefined && safeBloodSugar.after !== null
+            ? Number(safeBloodSugar.after)
+            : null,
+      },
+    };
+  };
 
   // Replace localStorage logic with Firestore sync
   useEffect(() => {
@@ -30,7 +50,57 @@ function App() {
     }
     // Listen to Firestore workouts for this user
     const unsubscribe = listenUserWorkouts(user.uid, (workouts) => {
-      setWorkouts(workouts);
+      setWorkouts(workouts.map(normalizeWorkout));
+    });
+    return () => unsubscribe();
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) {
+      setBloodSugarReadings([]);
+      return;
+    }
+    const unsubscribe = listenBloodSugarReadings(user.uid, (readings) => {
+      const toISOString = (value) => {
+        if (!value) return null;
+        if (typeof value.toDate === "function") {
+          try {
+            return value.toDate().toISOString();
+          } catch {
+            return null;
+          }
+        }
+        if (value instanceof Date) {
+          return Number.isNaN(value.getTime()) ? null : value.toISOString();
+        }
+        const parsed = new Date(value);
+        return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
+      };
+      const normalized = readings.map((reading) => {
+        const meter =
+          reading?.meter !== undefined && reading?.meter !== null
+            ? Number(reading.meter)
+            : null;
+        const cgm =
+          reading?.cgm !== undefined && reading?.cgm !== null
+            ? Number(reading.cgm)
+            : null;
+        const difference =
+          reading?.difference !== undefined && reading?.difference !== null
+            ? Number(reading.difference)
+            : meter !== null && cgm !== null
+            ? Number(meter) - Number(cgm)
+            : null;
+        return {
+          ...reading,
+          meter: Number.isFinite(meter) ? meter : null,
+          cgm: Number.isFinite(cgm) ? cgm : null,
+          difference: Number.isFinite(difference) ? difference : null,
+          recordedAt: toISOString(reading?.recordedAt) || toISOString(reading?.createdAt),
+          createdAt: toISOString(reading?.createdAt),
+        };
+      });
+      setBloodSugarReadings(normalized);
     });
     return () => unsubscribe();
   }, [user]);
@@ -161,6 +231,39 @@ function App() {
       const sum = values.reduce((a, b) => a + Number(b), 0);
       return Math.round(sum / values.length);
     })(),
+    avgMeter: (() => {
+      const numeric = bloodSugarReadings
+        .map((r) => r?.meter)
+        .filter((v) => v !== null && v !== undefined && Number.isFinite(Number(v)));
+      if (!numeric.length) return null;
+      const sum = numeric.reduce((acc, value) => acc + Number(value), 0);
+      return Number((sum / numeric.length).toFixed(1));
+    })(),
+    avgCGM: (() => {
+      const numeric = bloodSugarReadings
+        .map((r) => r?.cgm)
+        .filter((v) => v !== null && v !== undefined && Number.isFinite(Number(v)));
+      if (!numeric.length) return null;
+      const sum = numeric.reduce((acc, value) => acc + Number(value), 0);
+      return Number((sum / numeric.length).toFixed(1));
+    })(),
+    avgMeterCgmDiff: (() => {
+      const numeric = bloodSugarReadings
+        .map((r) => {
+          if (r?.difference !== undefined && r?.difference !== null) return Number(r.difference);
+          if (Number.isFinite(Number(r?.meter)) && Number.isFinite(Number(r?.cgm))) {
+            return Number(r.meter) - Number(r.cgm);
+          }
+          return null;
+        })
+        .filter((v) => v !== null && Number.isFinite(v));
+      if (!numeric.length) return { avg: null, abs: null };
+      const sum = numeric.reduce((acc, value) => acc + value, 0);
+      const absSum = numeric.reduce((acc, value) => acc + Math.abs(value), 0);
+      const avg = Number((sum / numeric.length).toFixed(1));
+      const abs = Number((absSum / numeric.length).toFixed(1));
+      return { avg, abs };
+    })(),
   };
 
   const filteredWorkouts = workouts.filter((w) => {
@@ -186,6 +289,16 @@ function App() {
   }, [filteredWorkouts]);
 
   const workoutsToRender = sortedWorkouts;
+
+  const handleAddBloodSugarEntry = async ({ meter, cgm }) => {
+    if (!user) return;
+    await addBloodSugarReading(user.uid, { meter, cgm });
+  };
+
+  const handleDeleteBloodSugarEntry = async (id) => {
+    if (!user || !id) return;
+    await deleteBloodSugarReading(id);
+  };
 
   // no-op placeholder for backwards compatibility of initialTemplate feature
 
@@ -314,11 +427,11 @@ function App() {
               </div>
               <div className="text-xl sm:text-2xl font-bold text-orange-700 transition-all duration-300 group-hover:scale-105">{stats.today}</div>
               <div className="text-2xs sm:text-xs text-orange-600 font-medium">Today's Plan</div>
-            </div>
           </div>
+        </div>
 
-          {/* Stats Row 2 (3 items max) */}
-          <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-2">
+        {/* Stats Row 2 (3 items max) */}
+        <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-2">
             {/* Blood Sugar Report (full width on all sizes) */}
             <div className="card-interactive col-span-3 bg-gradient-to-br from-rose-50 to-rose-100 p-2 sm:p-3 border border-rose-200/50 hover:shadow-glow-purple animate-slide-up animate-delay-200 group w-full">
               <div className="flex items-center justify-between gap-2 min-w-0">
@@ -328,17 +441,47 @@ function App() {
                   </div>
                   <span className="whitespace-nowrap">Blood Sugar</span>
                 </div>
-                <div className="flex items-center gap-2 text-[11px] sm:text-xs text-rose-700 leading-tight truncate">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 text-[11px] sm:text-xs text-rose-700 leading-tight truncate w-full">
                   {(() => {
-                    const hasAny = stats.avgBefore !== null || stats.avgAfter !== null;
-                    const before = stats.avgBefore !== null ? `B: ${stats.avgBefore}` : 'B: —';
-                    const after = stats.avgAfter !== null ? `A: ${stats.avgAfter}` : 'A: —';
-                    const unit = hasAny ? ' mg/dL' : '';
+                    const beforeAfterAvailable = stats.avgBefore !== null || stats.avgAfter !== null;
+                    const before = stats.avgBefore !== null ? `B: ${stats.avgBefore}` : "B: —";
+                    const after = stats.avgAfter !== null ? `A: ${stats.avgAfter}` : "A: —";
+                    const meter = stats.avgMeter !== null ? `M: ${stats.avgMeter}` : "M: —";
+                    const cgm = stats.avgCGM !== null ? `C: ${stats.avgCGM}` : "C: —";
+                    const diffAvg = stats.avgMeterCgmDiff?.avg ?? null;
+                    const diffAbs = stats.avgMeterCgmDiff?.abs ?? null;
+                    const diffLabel =
+                      diffAvg !== null ? `Δ: ${diffAvg}` : "Δ: —";
+                    const diffAbsLabel =
+                      diffAbs !== null ? `|Δ|: ${diffAbs}` : "|Δ|: —";
+                    const unit = beforeAfterAvailable ? " mg/dL" : "";
+                    const diffUnit =
+                      diffAvg !== null || diffAbs !== null ? " mg/dL" : "";
                     return (
                       <>
-                        <span className="whitespace-nowrap">{before}</span>
-                        <span className="opacity-40">•</span>
-                        <span className="whitespace-nowrap">{after}{unit}</span>
+                        <div className="flex items-center gap-2 min-w-0 whitespace-nowrap">
+                          <span>{before}</span>
+                          <span className="opacity-40">•</span>
+                          <span>
+                            {after}
+                            {unit}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 min-w-0 whitespace-nowrap">
+                          <span>{meter}</span>
+                          <span className="opacity-40">•</span>
+                          <span>{cgm}</span>
+                          <span className="opacity-40">•</span>
+                          <span>
+                            {diffLabel}
+                            {diffUnit}
+                          </span>
+                          <span className="opacity-40">•</span>
+                          <span>
+                            {diffAbsLabel}
+                            {diffUnit}
+                          </span>
+                        </div>
                       </>
                     );
                   })()}
@@ -372,6 +515,14 @@ function App() {
 
           {/* Template search moved into Add Workout modal */}
         </div>
+      </div>
+
+      <div className="max-w-md mx-auto mobile-padding pb-4 sm:pb-6">
+        <BloodSugarTracker
+          readings={bloodSugarReadings}
+          onAddReading={handleAddBloodSugarEntry}
+          onDeleteReading={handleDeleteBloodSugarEntry}
+        />
       </div>
 
       {/* Enhanced Workout List with improved animations */}

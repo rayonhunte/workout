@@ -6,7 +6,6 @@ const WorkoutCard = ({ workout, onSelect, onToggleComplete, onDelete }) => {
   const completedExercises = workout.exercises.filter(ex => ex.completed).length;
   const totalExercises = workout.exercises.length;
   const progress = totalExercises > 0 ? (completedExercises / totalExercises) * 100 : 0;
-
   return (
     <div
       className={`group relative card-interactive p-5 mb-4 border-l-4 overflow-hidden transition-all duration-300 hover:shadow-strong hover:-translate-y-2 hover:scale-[1.02] ${
