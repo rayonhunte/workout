@@ -7,6 +7,7 @@ import Help from './components/Help';
 import ThemeToggle from './components/ThemeToggle';
 import GoogleSignInButton from './components/GoogleSignInButton';
 import BloodSugarTracker from './components/BloodSugarTracker';
+import BloodSugarReadingsList from './components/BloodSugarReadingsList';
 import { auth } from './firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 
@@ -20,7 +21,7 @@ function App() {
   const [selectedWorkout, setSelectedWorkout] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [currentView, setCurrentView] = useState('list'); // 'list' | 'details' | 'help'
-  const [filter, setFilter] = useState('all'); // all | today | completed
+  const [filter, setFilter] = useState('all'); // all | today | completed | bloodSugar
   const [filterDate, setFilterDate] = useState(''); // optional date filter (YYYY-MM-DD)
   const [user, setUser] = useState(null);
   const [initialTemplateForModal, setInitialTemplateForModal] = useState(null);
@@ -427,64 +428,51 @@ function App() {
               </div>
               <div className="text-xl sm:text-2xl font-bold text-orange-700 transition-all duration-300 group-hover:scale-105">{stats.today}</div>
               <div className="text-2xs sm:text-xs text-orange-600 font-medium">Today's Plan</div>
+            </div>
           </div>
-        </div>
+
+          <div className="mt-4">
+            <BloodSugarTracker
+              onAddReading={handleAddBloodSugarEntry}
+              hasReadings={bloodSugarReadings.length > 0}
+            />
+          </div>
 
         {/* Stats Row 2 (3 items max) */}
         <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-2">
             {/* Blood Sugar Report (full width on all sizes) */}
-            <div className="card-interactive col-span-3 bg-gradient-to-br from-rose-50 to-rose-100 p-2 sm:p-3 border border-rose-200/50 hover:shadow-glow-purple animate-slide-up animate-delay-200 group w-full">
-              <div className="flex items-center justify-between gap-2 min-w-0">
-                <div className="flex items-center text-rose-600 font-semibold text-[11px] sm:text-xs shrink-0">
-                  <div className="mr-2 p-1 sm:p-1.5 bg-rose-500 text-white rounded-lg shadow-md group-hover:shadow-lg transition-all duration-300 group-hover:scale-110">
-                    <FiDroplet size={14} className="sm:w-[16px] sm:h-[16px]" />
-                  </div>
-                  <span className="whitespace-nowrap">Blood Sugar</span>
+            <div className="card-interactive col-span-3 bg-gradient-to-br from-rose-50 to-rose-100 p-4 border border-rose-200/50 hover:shadow-glow-purple animate-slide-up animate-delay-200 group w-full">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="p-2 bg-rose-500 text-white rounded-lg shadow-md">
+                  <FiDroplet size={18} />
                 </div>
-                <div className="flex flex-col sm:flex-row sm:items-center gap-1 text-[11px] sm:text-xs text-rose-700 leading-tight truncate w-full">
-                  {(() => {
-                    const beforeAfterAvailable = stats.avgBefore !== null || stats.avgAfter !== null;
-                    const before = stats.avgBefore !== null ? `B: ${stats.avgBefore}` : "B: —";
-                    const after = stats.avgAfter !== null ? `A: ${stats.avgAfter}` : "A: —";
-                    const meter = stats.avgMeter !== null ? `M: ${stats.avgMeter}` : "M: —";
-                    const cgm = stats.avgCGM !== null ? `C: ${stats.avgCGM}` : "C: —";
-                    const diffAvg = stats.avgMeterCgmDiff?.avg ?? null;
-                    const diffAbs = stats.avgMeterCgmDiff?.abs ?? null;
-                    const diffLabel =
-                      diffAvg !== null ? `Δ: ${diffAvg}` : "Δ: —";
-                    const diffAbsLabel =
-                      diffAbs !== null ? `|Δ|: ${diffAbs}` : "|Δ|: —";
-                    const unit = beforeAfterAvailable ? " mg/dL" : "";
-                    const diffUnit =
-                      diffAvg !== null || diffAbs !== null ? " mg/dL" : "";
-                    return (
-                      <>
-                        <div className="flex items-center gap-2 min-w-0 whitespace-nowrap">
-                          <span>{before}</span>
-                          <span className="opacity-40">•</span>
-                          <span>
-                            {after}
-                            {unit}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 min-w-0 whitespace-nowrap">
-                          <span>{meter}</span>
-                          <span className="opacity-40">•</span>
-                          <span>{cgm}</span>
-                          <span className="opacity-40">•</span>
-                          <span>
-                            {diffLabel}
-                            {diffUnit}
-                          </span>
-                          <span className="opacity-40">•</span>
-                          <span>
-                            {diffAbsLabel}
-                            {diffUnit}
-                          </span>
-                        </div>
-                      </>
-                    );
-                  })()}
+                <div>
+                  <h4 className="text-base font-semibold text-rose-700">
+                    Blood Sugar Snapshot
+                  </h4>
+                  <p className="text-xs text-rose-600">
+                    Averages across workouts and CGM logs.
+                  </p>
+                </div>
+              </div>
+              <div className="space-y-2 text-sm text-rose-700">
+                <div className="rounded-lg border border-rose-200 bg-white/80 px-3 py-2 flex justify-between">
+                  <span className="font-semibold text-rose-600">Before / After</span>
+                  <span>B: {stats.avgBefore ?? "—"} · A: {stats.avgAfter ?? "—"} mg/dL</span>
+                </div>
+                <div className="rounded-lg border border-rose-200 bg-white/80 px-3 py-2 flex justify-between">
+                  <span className="font-semibold text-rose-600">Meter / CGM</span>
+                  <span>M: {stats.avgMeter ?? "—"} · C: {stats.avgCGM ?? "—"} mg/dL</span>
+                </div>
+                <div className="rounded-lg border border-rose-200 bg-white/80 px-3 py-2 flex justify-between">
+                  <span className="font-semibold text-rose-600">Difference</span>
+                  <span>
+                    Δ: {stats.avgMeterCgmDiff?.avg ?? "—"} · |Δ|: {stats.avgMeterCgmDiff?.abs ?? "—"} mg/dL
+                  </span>
+                </div>
+                <div className="rounded-lg border border-rose-200 bg-white/80 px-3 py-2 flex justify-between">
+                  <span className="font-semibold text-rose-600">Entries</span>
+                  <span>{bloodSugarReadings.length} readings</span>
                 </div>
               </div>
             </div>
@@ -496,6 +484,7 @@ function App() {
               { key: 'all', label: 'All' },
               { key: 'today', label: "Today's" },
               { key: 'completed', label: 'Completed' },
+              { key: 'bloodSugar', label: 'Blood Sugar Readings' },
             ].map(({ key, label }) => (
               <button
                 key={key}
@@ -513,19 +502,21 @@ function App() {
             ))}
           </div>
 
+          {filter === 'bloodSugar' && (
+            <div className="mt-4">
+              <BloodSugarReadingsList
+                readings={bloodSugarReadings}
+                onDelete={handleDeleteBloodSugarEntry}
+              />
+            </div>
+          )}
+
           {/* Template search moved into Add Workout modal */}
         </div>
       </div>
 
-      <div className="max-w-md mx-auto mobile-padding pb-4 sm:pb-6">
-        <BloodSugarTracker
-          readings={bloodSugarReadings}
-          onAddReading={handleAddBloodSugarEntry}
-          onDeleteReading={handleDeleteBloodSugarEntry}
-        />
-      </div>
-
       {/* Enhanced Workout List with improved animations */}
+      {filter !== 'bloodSugar' && (
       <div className="max-w-md mx-auto mobile-padding py-4 sm:py-6">
         {/* Date filter row (compact) */}
         <div className="flex items-center justify-between mb-3">
@@ -589,6 +580,7 @@ function App() {
           </div>
         )}
       </div>
+      )}
 
       {/* Add Workout Modal */}
       <AddWorkoutModal

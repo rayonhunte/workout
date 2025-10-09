@@ -3,7 +3,6 @@ import {
   collection,
   query,
   where,
-  orderBy,
   addDoc,
   deleteDoc,
   doc,
@@ -17,16 +16,24 @@ const collectionName = "bloodSugarReadings";
 // Listen for a user's blood sugar readings, newest first
 export const listenBloodSugarReadings = (uid, callback) => {
   if (!uid) return () => {};
-  const q = query(
-    collection(db, collectionName),
-    where("uid", "==", uid),
-    orderBy("recordedAt", "desc")
-  );
+  const q = query(collection(db, collectionName), where("uid", "==", uid));
+  const toMillis = (value) => {
+    if (!value) return 0;
+    if (typeof value.toMillis === "function") return value.toMillis();
+    if (typeof value.toDate === "function") {
+      const d = value.toDate();
+      return Number.isNaN(d.getTime()) ? 0 : d.getTime();
+    }
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? 0 : parsed.getTime();
+  };
   return onSnapshot(q, (snapshot) => {
-    const readings = snapshot.docs.map((d) => ({
-      ...d.data(),
-      id: d.id,
-    }));
+    const readings = snapshot.docs
+      .map((d) => ({
+        ...d.data(),
+        id: d.id,
+      }))
+      .sort((a, b) => toMillis(b.recordedAt) - toMillis(a.recordedAt));
     callback(readings);
   });
 };
