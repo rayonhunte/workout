@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FiArrowLeft, FiCheck, FiDroplet, FiSave, FiEdit, FiPlus, FiTrash2 } from "react-icons/fi";
+import { FiArrowLeft, FiCheck, FiDroplet, FiSave, FiEdit, FiPlus, FiTrash2, FiX } from "react-icons/fi";
 import { formatDate } from "../utils/helpers";
 
 const WorkoutDetails = ({ workout, onBack, onUpdateWorkout, onDelete }) => {
@@ -11,6 +11,7 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout, onDelete }) => {
     workout.bloodSugar.after || ""
   );
   const [isEditing, setIsEditing] = useState(false);
+  const [exerciseModal, setExerciseModal] = useState(null);
 
   const setName = (name) => setLocalWorkout({ ...localWorkout, name });
   const setDate = (date) => setLocalWorkout({ ...localWorkout, date });
@@ -62,6 +63,52 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout, onDelete }) => {
     };
     onUpdateWorkout(updatedWorkout);
     onBack();
+  };
+
+  const openExerciseModal = (index) => {
+    const target = localWorkout.exercises[index];
+    if (!target) return;
+    setExerciseModal({
+      index,
+      data: {
+        name: target.name || "",
+        sets: target.sets ? String(target.sets) : "1",
+        reps: target.reps || "",
+        details: target.details || "",
+      },
+    });
+  };
+
+  const closeExerciseModal = () => setExerciseModal(null);
+
+  const updateExerciseModalField = (field, value) => {
+    setExerciseModal((prev) =>
+      prev
+        ? {
+            ...prev,
+            data: {
+              ...prev.data,
+              [field]: field === "sets" ? value.replace(/[^\d]/g, "") : value,
+            },
+          }
+        : prev
+    );
+  };
+
+  const saveExerciseModal = () => {
+    if (!exerciseModal) return;
+    const { index, data } = exerciseModal;
+    const sanitizedSets = Math.max(1, parseInt(data.sets, 10) || 1);
+    const updatedExercises = [...localWorkout.exercises];
+    updatedExercises[index] = {
+      ...updatedExercises[index],
+      name: data.name.trim() || updatedExercises[index].name || `Exercise ${index + 1}`,
+      sets: sanitizedSets,
+      reps: data.reps.trim(),
+      details: data.details.trim(),
+    };
+    setLocalWorkout({ ...localWorkout, exercises: updatedExercises });
+    closeExerciseModal();
   };
 
   const completedExercises = localWorkout.exercises.filter(
@@ -418,7 +465,7 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout, onDelete }) => {
                           className={`font-bold text-base sm:text-lg transition-all duration-300 text-shadow-sm ${
                             exercise.completed
                               ? "text-green-800"
-                              : "text-gray-800 group-hover:text-gray-900 dark:text-gray-100"
+                              : "text-gray-800 group-hover:text-blue-800 dark:text-gray-100"
                           }`}
                         >
                           {exercise.name}
@@ -474,19 +521,22 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout, onDelete }) => {
                       </div>
                     ) : (
                       <div className="space-y-2">
-                        <div
-                          className={`inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-300 shadow-sm hover:shadow-md ${
+                        <button
+                          type="button"
+                          onClick={() => openExerciseModal(index)}
+                          className={`inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold tracking-wide transition-all duration-300 shadow-sm hover:shadow-md focus-ring ${
                             exercise.completed
-                              ? "bg-green-100 text-green-700 border border-green-200 hover:bg-green-200"
-                              : "bg-gray-100 text-gray-600 border border-gray-200 group-hover:bg-blue-50 group-hover:text-blue-700 group-hover:border-blue-200"
+                              ? "bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 focus-visible:shadow-glow-green/40"
+                              : "bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 hover:border-blue-300 dark:bg-blue-900/30 dark:text-blue-200 dark:border-blue-800 group-hover:bg-blue-100 group-hover:text-blue-700"
                           }`}
+                          aria-label={`Edit ${exercise.name || `exercise ${index + 1}`} details`}
                         >
                           <span className="font-bold text-sm sm:text-base">{exercise.sets}</span>
                           <span className="mx-1 sm:mx-1.5 text-[10px] sm:text-xs">sets</span>
                           <span className="mx-1 sm:mx-1.5 text-[10px] sm:text-xs">×</span>
                           <span className="font-bold text-sm sm:text-base">{exercise.reps}</span>
                           <span className="ml-1 sm:ml-1.5 text-[10px] sm:text-xs">reps</span>
-                        </div>
+                        </button>
                         {exercise.details && (
                           <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">{exercise.details}</p>
                         )}
@@ -504,6 +554,107 @@ const WorkoutDetails = ({ workout, onBack, onUpdateWorkout, onDelete }) => {
           </div>
         </div>
       </div>
+
+      {exerciseModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-8 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div
+            className="absolute inset-0"
+            onClick={closeExerciseModal}
+            role="presentation"
+          ></div>
+          <div className="relative z-10 w-full max-w-md rounded-2xl bg-white dark:bg-gray-900 shadow-2xl border border-gray-200 dark:border-gray-800 p-6 space-y-5 animate-slide-up">
+            <div className="flex items-start justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                  Edit Exercise
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Update the details and save to apply changes.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={closeExerciseModal}
+                className="p-2 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-800 transition-all duration-200 focus-ring"
+                aria-label="Close edit exercise modal"
+              >
+                <FiX size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide mb-1">
+                  Exercise Name
+                </label>
+                <input
+                  type="text"
+                  value={exerciseModal.data.name}
+                  onChange={(e) => updateExerciseModalField("name", e.target.value)}
+                  placeholder="Exercise name"
+                  className="input-base w-full px-4 py-3"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide mb-1">
+                    Sets
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={99}
+                    value={exerciseModal.data.sets}
+                    onChange={(e) => updateExerciseModalField("sets", e.target.value)}
+                    className="input-base w-full px-4 py-3 text-center"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide mb-1">
+                    Reps / Duration
+                  </label>
+                  <input
+                    type="text"
+                    value={exerciseModal.data.reps}
+                    onChange={(e) => updateExerciseModalField("reps", e.target.value)}
+                    placeholder="15 or 30 sec"
+                    className="input-base w-full px-4 py-3"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide mb-1">
+                  Details (optional)
+                </label>
+                <textarea
+                  rows={3}
+                  value={exerciseModal.data.details}
+                  onChange={(e) => updateExerciseModalField("details", e.target.value)}
+                  placeholder="Notes, intervals, weights, tempo…"
+                  className="input-base w-full px-4 py-3 resize-y"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:justify-end sm:space-x-3 space-y-3 sm:space-y-0 pt-2">
+              <button
+                type="button"
+                onClick={closeExerciseModal}
+                className="btn-secondary px-5 py-3 font-semibold text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={saveExerciseModal}
+                className="btn-primary px-5 py-3 font-semibold text-sm hover:shadow-glow-blue focus-ring"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Save Section (part of normal flow, not fixed) */}
       <div className="p-4 glass border-t border-white/20 shadow-2xl animate-slide-up">

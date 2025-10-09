@@ -17,7 +17,7 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout, uid, initialTemplate }
     // Use local timezone date string (YYYY-MM-DD)
     new Date().toLocaleDateString('en-CA')
   );
-  const [exercises, setExercises] = useState([{ name: "", sets: 1, reps: "" }]);
+  const [exercises, setExercises] = useState([{ name: "", sets: 1, reps: "", details: "" }]);
   const [selectedTemplate, setSelectedTemplate] = useState("");
   const [userTemplates, setUserTemplates] = useState([]);
   const [templateSearch, setTemplateSearch] = useState("");
@@ -32,7 +32,7 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout, uid, initialTemplate }
 
   const addExercise = () => {
     // Append so numbering increases (1, 2, 3, ...)
-    setExercises([...exercises, { name: "", sets: 1, reps: "" }]);
+    setExercises([...exercises, { name: "", sets: 1, reps: "", details: "" }]);
   };
 
   const removeExercise = (index) => {
@@ -96,10 +96,32 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout, uid, initialTemplate }
   const resetForm = () => {
     setWorkoutName("");
     setSelectedDate(new Date().toLocaleDateString('en-CA'));
-    setExercises([{ name: "", sets: 1, reps: "" }]);
+    setExercises([{ name: "", sets: 1, reps: "", details: "" }]);
     setSelectedTemplate("");
     setTemplateSearch("");
   };
+
+  const toMillis = (ts) => {
+    if (!ts) return 0;
+    if (typeof ts.toMillis === "function") return ts.toMillis();
+    if (typeof ts.seconds === "number") return ts.seconds * 1000;
+    const d = new Date(ts);
+    return Number.isNaN(d.getTime()) ? 0 : d.getTime();
+  };
+
+  const dedupedUserTemplates = useMemo(() => {
+    const latestByName = new Map();
+    userTemplates.forEach((template) => {
+      const normalizedName = (template.name || "").trim().toLowerCase();
+      const key = normalizedName || template.id;
+      if (!key) return;
+      const existing = latestByName.get(key);
+      if (!existing || toMillis(template.createdAt) >= toMillis(existing.createdAt)) {
+        latestByName.set(key, template);
+      }
+    });
+    return Array.from(latestByName.values());
+  }, [userTemplates]);
 
   // Filter default and user templates based on search query
   const filteredDefaultTemplates = useMemo(() => {
@@ -112,24 +134,18 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout, uid, initialTemplate }
   }, [templateSearch]);
 
   const filteredUserTemplates = useMemo(() => {
+    const sortByNewest = (list) =>
+      [...list].sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt));
+    
     const q = templateSearch.trim().toLowerCase();
     if (!q) {
-      // sort by createdAt desc and return last 3
-      const toMillis = (ts) => {
-        if (!ts) return 0;
-        if (typeof ts.toMillis === 'function') return ts.toMillis();
-        if (typeof ts.seconds === 'number') return ts.seconds * 1000;
-        const d = new Date(ts);
-        return isNaN(d.getTime()) ? 0 : d.getTime();
-      };
-      const sorted = [...userTemplates].sort((a, b) => (toMillis(b.createdAt) - toMillis(a.createdAt)));
-      return sorted.slice(0, 3);
+      return sortByNewest(dedupedUserTemplates).slice(0, 3);
     }
     const matches = (t) =>
       (t.name || "").toLowerCase().includes(q) ||
       (Array.isArray(t.exercises) && t.exercises.some(ex => (ex.name || "").toLowerCase().includes(q)));
-    return userTemplates.filter(matches);
-  }, [userTemplates, templateSearch]);
+    return sortByNewest(dedupedUserTemplates.filter(matches));
+  }, [dedupedUserTemplates, templateSearch]);
 
   return (
     <Transition show={isOpen}>
@@ -227,7 +243,7 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout, uid, initialTemplate }
                         <div className="pr-8">
                           <div className={`font-bold text-lg mb-2 transition-colors duration-200 ${
                             selectedTemplate === template.name 
-                              ? "text-blue-800 dark:text-blue-200" 
+                              ? "text-blue-700 dark:text-blue-100" 
                               : "text-gray-800 dark:text-gray-100 group-hover:text-blue-700"
                           }`}>
                             {template.name}
@@ -235,7 +251,7 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout, uid, initialTemplate }
                           
                           <div className={`text-sm mb-3 transition-colors duration-200 ${
                             selectedTemplate === template.name 
-                              ? "text-blue-600 dark:text-blue-300" 
+                              ? "text-blue-600 dark:text-blue-200" 
                               : "text-gray-600 dark:text-gray-300 group-hover:text-gray-700"
                           }`}>
                             {template.exercises.length} exercises • Perfect for quick workouts
@@ -248,7 +264,7 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout, uid, initialTemplate }
                                 key={exerciseIndex}
                                 className={`text-xs px-2 py-1 rounded-md inline-block mr-2 transition-colors duration-200 ${
                                   selectedTemplate === template.name
-                                    ? "bg-blue-200/60 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200"
+                                    ? "bg-blue-200/60 text-blue-700 dark:bg-blue-900/30 dark:text-blue-100"
                                     : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 group-hover:bg-blue-100 dark:group-hover:bg-gray-700 group-hover:text-blue-700"
                                 }`}
                               >
@@ -258,7 +274,7 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout, uid, initialTemplate }
                             {template.exercises.length > 2 && (
                               <div className={`text-xs px-2 py-1 rounded-md inline-block transition-colors duration-200 ${
                                 selectedTemplate === template.name
-                                  ? "bg-blue-200/60 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200"
+                                  ? "bg-blue-200/60 text-blue-700 dark:bg-blue-900/30 dark:text-blue-100"
                                   : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 group-hover:bg-blue-100 dark:group-hover:bg-gray-700 group-hover:text-blue-700"
                               }`}>
                                 +{template.exercises.length - 2} more
@@ -314,7 +330,7 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout, uid, initialTemplate }
                           )}
                           <div className="pr-8">
                             <div className={`font-bold text-lg mb-2 ${
-                              selectedTemplate === template.name ? 'text-blue-800 dark:text-blue-200' : 'text-gray-800 dark:text-gray-100'
+                              selectedTemplate === template.name ? 'text-blue-700 dark:text-blue-100' : 'text-gray-800 dark:text-gray-100'
                             }`}>
                               {template.name}
                             </div>
@@ -323,12 +339,20 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout, uid, initialTemplate }
                             </div>
                             <div className="space-y-1">
                               {template.exercises.slice(0, 2).map((exercise, exerciseIndex) => (
-                                <div key={exerciseIndex} className="text-xs px-2 py-1 rounded-md inline-block mr-2 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
+                                <div key={exerciseIndex} className={`text-xs px-2 py-1 rounded-md inline-block mr-2 ${
+                                  selectedTemplate === template.name
+                                    ? "bg-blue-200/60 text-blue-700 dark:bg-blue-900/30 dark:text-blue-100"
+                                    : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
+                                }`}>
                                   {exercise.name}
                                 </div>
                               ))}
                               {template.exercises.length > 2 && (
-                                <div className="text-xs px-2 py-1 rounded-md inline-block bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
+                                <div className={`text-xs px-2 py-1 rounded-md inline-block ${
+                                  selectedTemplate === template.name
+                                    ? "bg-blue-200/60 text-blue-700 dark:bg-blue-900/30 dark:text-blue-100"
+                                    : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
+                                }`}>
                                   +{template.exercises.length - 2} more
                                 </div>
                               )}
@@ -485,6 +509,20 @@ const AddWorkoutModal = ({ isOpen, onClose, onAddWorkout, uid, initialTemplate }
                                 required
                               />
                             </div>
+                          </div>
+
+                          {/* Details field for complex exercises */}
+                          <div className="mt-4">
+                            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-2 uppercase tracking-wide">
+                              Details (optional)
+                            </label>
+                            <textarea
+                              rows={2}
+                              value={exercise.details || ''}
+                              onChange={(e) => updateExercise(index, 'details', e.target.value)}
+                              placeholder="Notes, intervals, weights, tempo…"
+                              className="input-base px-4 py-3 text-gray-800 dark:text-gray-100 font-medium resize-y hover:shadow-md"
+                            />
                           </div>
 
                           {/* Progress indicator for completion */}
