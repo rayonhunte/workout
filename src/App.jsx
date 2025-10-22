@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { FiPlus, FiActivity, FiTrendingUp, FiDroplet, FiHelpCircle } from 'react-icons/fi';
+import { FiPlus, FiActivity, FiTrendingUp, FiHelpCircle, FiMenu } from 'react-icons/fi';
 import WorkoutCard from './components/WorkoutCard';
 import WorkoutDetails from './components/WorkoutDetails';
 import AddWorkoutModal from './components/AddWorkoutModal';
 import Help from './components/Help';
 import ThemeToggle from './components/ThemeToggle';
 import GoogleSignInButton from './components/GoogleSignInButton';
-import BloodSugarTracker from './components/BloodSugarTracker';
-import BloodSugarReadingsList from './components/BloodSugarReadingsList';
+import SideMenu from './components/SideMenu';
+import Glucose from './components/Glucose';
 import { auth } from './firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 
@@ -20,11 +20,12 @@ function App() {
   const [bloodSugarReadings, setBloodSugarReadings] = useState([]);
   const [selectedWorkout, setSelectedWorkout] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [currentView, setCurrentView] = useState('list'); // 'list' | 'details' | 'help'
-  const [filter, setFilter] = useState('all'); // all | today | completed | bloodSugar
+  const [currentView, setCurrentView] = useState('list'); // 'list' | 'details' | 'help' | 'glucose'
+  const [filter, setFilter] = useState('all'); // all | today | completed
   const [filterDate, setFilterDate] = useState(''); // optional date filter (YYYY-MM-DD)
   const [user, setUser] = useState(null);
   const [initialTemplateForModal, setInitialTemplateForModal] = useState(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const normalizeWorkout = (workout) => {
     const safeBloodSugar = workout?.bloodSugar ?? {};
@@ -143,6 +144,20 @@ function App() {
     setCurrentView('help');
     try {
       window.location.hash = 'help';
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleNavigate = (destination) => {
+    try {
+      if (destination === 'home') {
+        window.location.hash = '';
+      } else if (destination === 'glucose') {
+        window.location.hash = 'glucose';
+      } else if (destination === 'help') {
+        window.location.hash = 'help';
+      }
     } catch {
       // ignore
     }
@@ -311,6 +326,10 @@ function App() {
         setCurrentView('help');
         return;
       }
+      if (hash === 'glucose') {
+        setCurrentView('glucose');
+        return;
+      }
       if (hash.startsWith('workout/')) {
         const id = decodeURIComponent(hash.split('/')[1] || '');
         const w = workouts.find(x => x.id === id);
@@ -357,12 +376,29 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 dark:from-gray-900 dark:via-gray-900/80 dark:to-gray-900 animate-fade-in">
+      <SideMenu
+        open={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
+        onNavigate={handleNavigate}
+        onSignOut={() => user && signOut(auth)}
+      >
+        <div className="px-3 py-2">
+          <ThemeToggle />
+        </div>
+      </SideMenu>
       {/* Enhanced Header with improved animations */}
       <div className="glass shadow-soft border-b border-white/20 animate-slide-down">
         <div className="max-w-md mx-auto mobile-padding py-4 sm:py-6">
           <div className="flex items-center justify-between mb-4 sm:mb-6">
             <div className="animate-slide-up flex-1 pr-3">
               <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setIsMenuOpen(true)}
+                  aria-label="Open menu"
+                  className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 focus-ring"
+                >
+                  <FiMenu size={20} />
+                </button>
                 <img src="/bloodlogo.png" alt="Site logo" className="w-8 h-8 sm:w-10 sm:h-10 rounded-md shadow-sm" />
                 <h1 className="text-2xl sm:text-3xl font-bold gradient-text text-shadow-sm animate-float">
                   Workout Tracker
@@ -371,7 +407,6 @@ function App() {
               <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mt-1 smooth-colors">Track your fitness journey</p>
             </div>
             <div className="flex items-center">
-              <ThemeToggle />
               <button
                 onClick={() => setShowAddModal(true)}
                 aria-label="Add workout"
@@ -431,83 +466,29 @@ function App() {
             </div>
           </div>
 
-          <div className="mt-4">
-            <BloodSugarTracker
-              onAddReading={handleAddBloodSugarEntry}
-              hasReadings={bloodSugarReadings.length > 0}
-            />
-          </div>
-
-        {/* Stats Row 2 (3 items max) */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-2">
-            {/* Blood Sugar Report (full width on all sizes) */}
-            <div className="card-interactive col-span-3 bg-gradient-to-br from-rose-50 to-rose-100 p-4 border border-rose-200/50 hover:shadow-glow-purple animate-slide-up animate-delay-200 group w-full">
-              <div className="flex items-start gap-3 mb-4">
-                <div className="p-2 bg-rose-500 text-white rounded-lg shadow-md">
-                  <FiDroplet size={18} />
-                </div>
-                <div>
-                  <h4 className="text-base font-semibold text-rose-700">
-                    Blood Sugar Snapshot
-                  </h4>
-                  <p className="text-xs text-rose-600">
-                    Averages across workouts and CGM logs.
-                  </p>
-                </div>
-              </div>
-              <div className="space-y-2 text-sm text-rose-700">
-                <div className="rounded-lg border border-rose-200 bg-white/80 px-3 py-2 flex justify-between">
-                  <span className="font-semibold text-rose-600">Before / After</span>
-                  <span>B: {stats.avgBefore ?? "—"} · A: {stats.avgAfter ?? "—"} mg/dL</span>
-                </div>
-                <div className="rounded-lg border border-rose-200 bg-white/80 px-3 py-2 flex justify-between">
-                  <span className="font-semibold text-rose-600">Meter / CGM</span>
-                  <span>M: {stats.avgMeter ?? "—"} · C: {stats.avgCGM ?? "—"} mg/dL</span>
-                </div>
-                <div className="rounded-lg border border-rose-200 bg-white/80 px-3 py-2 flex justify-between">
-                  <span className="font-semibold text-rose-600">Difference</span>
-                  <span>
-                    Δ: {stats.avgMeterCgmDiff?.avg ?? "—"} · |Δ|: {stats.avgMeterCgmDiff?.abs ?? "—"} mg/dL
-                  </span>
-                </div>
-                <div className="rounded-lg border border-rose-200 bg-white/80 px-3 py-2 flex justify-between">
-                  <span className="font-semibold text-rose-600">Entries</span>
-                  <span>{bloodSugarReadings.length} readings</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Filters */}
-          <div className="mt-4 flex items-center gap-2">
-            {[
-              { key: 'all', label: 'All' },
-              { key: 'today', label: "Today's" },
-              { key: 'completed', label: 'Completed' },
-              { key: 'bloodSugar', label: 'Blood Sugar Readings' },
-            ].map(({ key, label }) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setFilter(key)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 focus-ring ${
-                  filter === key
-                    ? 'bg-blue-600 text-white border-blue-600 shadow-md'
-                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
-                }`}
-                aria-pressed={filter === key}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-
-          {filter === 'bloodSugar' && (
-            <div className="mt-4">
-              <BloodSugarReadingsList
-                readings={bloodSugarReadings}
-                onDelete={handleDeleteBloodSugarEntry}
-              />
+          
+          {/* Filters (Home only) */}
+          {currentView === 'list' && (
+            <div className="mt-4 flex items-center gap-2">
+              {[
+                { key: 'all', label: 'All' },
+                { key: 'today', label: "Today's" },
+                { key: 'completed', label: 'Completed' },
+              ].map(({ key, label }) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setFilter(key)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 focus-ring ${
+                    filter === key
+                      ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                      : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  }`}
+                  aria-pressed={filter === key}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
           )}
 
@@ -516,7 +497,7 @@ function App() {
       </div>
 
       {/* Enhanced Workout List with improved animations */}
-      {filter !== 'bloodSugar' && (
+      {currentView === 'list' && (
       <div className="max-w-md mx-auto mobile-padding py-4 sm:py-6">
         {/* Date filter row (compact) */}
         <div className="flex items-center justify-between mb-3">
@@ -580,6 +561,15 @@ function App() {
           </div>
         )}
       </div>
+      )}
+
+      {currentView === 'glucose' && (
+        <Glucose
+          stats={stats}
+          readings={bloodSugarReadings}
+          onAddReading={handleAddBloodSugarEntry}
+          onDeleteReading={handleDeleteBloodSugarEntry}
+        />
       )}
 
       {/* Add Workout Modal */}
