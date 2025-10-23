@@ -1,7 +1,29 @@
-import React, { useEffect } from 'react';
-import { FiX, FiHome, FiDroplet, FiHelpCircle, FiLogOut } from 'react-icons/fi';
+import React, { useCallback, useEffect } from 'react';
+import { FiX, FiHome, FiDroplet, FiHelpCircle, FiLogOut, FiRefreshCcw, FiInfo, FiBarChart2 } from 'react-icons/fi';
 
 const SideMenu = ({ open, onClose, onNavigate, onSignOut, children }) => {
+  const currentVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.0.0';
+
+  const checkForUpdates = useCallback(async () => {
+    try {
+      const res = await fetch(`/version.json?ts=${Date.now()}`, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const remote = String(data?.version || '').trim();
+      if (remote && remote !== currentVersion) {
+        // Simple feedback and force reload to get latest assets
+        // Close menu before reload
+        onClose?.();
+        alert(`New version available (v${remote}). Reloading...`);
+        window.location.reload();
+        return;
+      }
+      alert('You are on the latest version.');
+    } catch (e) {
+      console.warn('Update check failed:', e);
+      alert('Could not check for updates. Please try again.');
+    }
+  }, [currentVersion, onClose]);
   useEffect(() => {
     if (open) {
       document.body.style.overflow = 'hidden';
@@ -58,6 +80,13 @@ const SideMenu = ({ open, onClose, onNavigate, onSignOut, children }) => {
             <span className="font-medium">Home</span>
           </button>
           <button
+            onClick={() => { onNavigate?.('report'); onClose?.(); }}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 text-left"
+          >
+            <FiBarChart2 className="text-blue-600" />
+            <span className="font-medium">Workout Report</span>
+          </button>
+          <button
             onClick={() => { onNavigate?.('glucose'); onClose?.(); }}
             className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-900/20 text-left"
           >
@@ -71,11 +100,32 @@ const SideMenu = ({ open, onClose, onNavigate, onSignOut, children }) => {
             <FiHelpCircle className="text-gray-600 dark:text-gray-300" />
             <span className="font-medium">Help</span>
           </button>
+          <button
+            onClick={checkForUpdates}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-left"
+            title="Check for updates"
+          >
+            <FiRefreshCcw className="text-gray-600 dark:text-gray-300" />
+            <span className="font-medium">Check for Updates</span>
+          </button>
         </nav>
 
         {children}
 
         <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-gray-200 dark:border-gray-800">
+          <div className="w-full flex items-center justify-between px-3 py-2 text-xs text-gray-500 dark:text-gray-400">
+            <div className="flex items-center gap-2">
+              <FiInfo />
+              <span>Version {currentVersion}</span>
+            </div>
+            <button
+              onClick={checkForUpdates}
+              className="px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"
+              title="Check for updates"
+            >
+              Check
+            </button>
+          </div>
           <button
             onClick={() => { onSignOut?.(); onClose?.(); }}
             className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"

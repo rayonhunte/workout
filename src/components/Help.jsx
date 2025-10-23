@@ -1,5 +1,5 @@
 import React from 'react';
-import { FiArrowLeft, FiActivity, FiCheckCircle, FiPlus, FiTrash2, FiCalendar, FiDroplet } from 'react-icons/fi';
+import { FiArrowLeft, FiActivity, FiCheckCircle, FiPlus, FiTrash2, FiCalendar, FiDroplet, FiMenu, FiInfo, FiLogOut } from 'react-icons/fi';
 
 const Help = ({ onBack }) => {
   return (
@@ -20,6 +20,13 @@ const Help = ({ onBack }) => {
 
       <div className="max-w-md mx-auto mobile-padding py-4 sm:py-6 space-y-4">
         <div className="card-base p-5">
+          <h2 className="text-lg font-bold mb-2 flex items-center"><FiMenu className="mr-2 text-gray-700" />Menu & Navigation</h2>
+          <p className="text-sm text-gray-600 dark:text-gray-300">
+            Tap the menu button in the header to access Home, Glucose Tracking, Help, Theme, and account options. Help and Sign Out are now in the menu.
+          </p>
+        </div>
+
+        <div className="card-base p-5">
           <h2 className="text-lg font-bold mb-2 flex items-center"><FiPlus className="mr-2 text-blue-600" />Add Workouts</h2>
           <p className="text-sm text-gray-600 dark:text-gray-300">Tap the plus button to add a workout. Use templates or create your own exercises. The first exercise you add is number 1.</p>
         </div>
@@ -36,7 +43,24 @@ const Help = ({ onBack }) => {
 
         <div className="card-base p-5">
           <h2 className="text-lg font-bold mb-2 flex items-center"><FiDroplet className="mr-2 text-rose-600" />Blood Sugar</h2>
-          <p className="text-sm text-gray-600 dark:text-gray-300">Record levels before and after each workout. The dashboard shows your average values.</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300">
+            Track meter and CGM readings from the Glucose Tracking section in the menu. Averages and differences appear in the snapshot. You can still add before/after values per workout.
+          </p>
+        </div>
+
+        <div className="card-base p-5">
+          <h2 className="text-lg font-bold mb-2 flex items-center"><FiInfo className="mr-2 text-gray-700" />App Version & Updates</h2>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+            The app shows its current version at the bottom of the menu. Tap <strong>Check</strong> or <strong>Check for Updates</strong> to see if a newer version is available.
+          </p>
+          <p className="text-sm text-gray-600 dark:text-gray-300">
+            If a new version is found, the app reloads to apply it. The version is updated automatically on each push to the main (and dev) branch.
+          </p>
+        </div>
+
+        <div className="card-base p-5">
+          <h2 className="text-lg font-bold mb-2 flex items-center"><FiLogOut className="mr-2 text-gray-700" />Sign Out</h2>
+          <p className="text-sm text-gray-600 dark:text-gray-300">Open the menu and tap Sign Out at the bottom to securely log out of your account.</p>
         </div>
 
         <div className="card-base p-5">
@@ -53,4 +77,3 @@ const Help = ({ onBack }) => {
 };
 
 export default Help;
-

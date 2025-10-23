@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { FiPlus, FiActivity, FiTrendingUp, FiHelpCircle, FiMenu } from 'react-icons/fi';
+import { FiPlus, FiActivity, FiTrendingUp, FiMenu } from 'react-icons/fi';
 import WorkoutCard from './components/WorkoutCard';
 import WorkoutDetails from './components/WorkoutDetails';
 import AddWorkoutModal from './components/AddWorkoutModal';
@@ -8,6 +8,7 @@ import ThemeToggle from './components/ThemeToggle';
 import GoogleSignInButton from './components/GoogleSignInButton';
 import SideMenu from './components/SideMenu';
 import Glucose from './components/Glucose';
+import Report from './components/Report';
 import { auth } from './firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 
@@ -20,7 +21,7 @@ function App() {
   const [bloodSugarReadings, setBloodSugarReadings] = useState([]);
   const [selectedWorkout, setSelectedWorkout] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [currentView, setCurrentView] = useState('list'); // 'list' | 'details' | 'help' | 'glucose'
+  const [currentView, setCurrentView] = useState('list'); // 'list' | 'details' | 'help' | 'glucose' | 'report'
   const [filter, setFilter] = useState('all'); // all | today | completed
   const [filterDate, setFilterDate] = useState(''); // optional date filter (YYYY-MM-DD)
   const [user, setUser] = useState(null);
@@ -140,22 +141,25 @@ function App() {
     }
   };
 
-  const handleOpenHelp = () => {
-    setCurrentView('help');
-    try {
-      window.location.hash = 'help';
-    } catch {
-      // ignore
-    }
-  };
+  // Help navigation now via SideMenu; header button removed
 
   const handleNavigate = (destination) => {
     try {
       if (destination === 'home') {
+        setSelectedWorkout(null);
+        setCurrentView('list');
         window.location.hash = '';
       } else if (destination === 'glucose') {
+        setSelectedWorkout(null);
+        setCurrentView('glucose');
         window.location.hash = 'glucose';
+      } else if (destination === 'report') {
+        setSelectedWorkout(null);
+        setCurrentView('report');
+        window.location.hash = 'report';
       } else if (destination === 'help') {
+        setSelectedWorkout(null);
+        setCurrentView('help');
         window.location.hash = 'help';
       }
     } catch {
@@ -326,6 +330,10 @@ function App() {
         setCurrentView('help');
         return;
       }
+      if (hash === 'report') {
+        setCurrentView('report');
+        return;
+      }
       if (hash === 'glucose') {
         setCurrentView('glucose');
         return;
@@ -362,6 +370,10 @@ function App() {
 
   if (currentView === 'help') {
     return <Help onBack={handleBackToList} />;
+  }
+
+  if (currentView === 'report') {
+    return <Report workouts={workouts} />;
   }
 
   if (!user) {
@@ -415,22 +427,6 @@ function App() {
               >
                 <FiPlus size={24} className="transition-transform duration-200 group-hover:rotate-90" />
                 <div className="absolute inset-0 rounded-full bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </button>
-              {user && (
-                <button
-                  onClick={() => signOut(auth)}
-                  className="ml-3 px-3 py-1.5 rounded bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs font-semibold hover:bg-gray-300 dark:hover:bg-gray-700 transition-all"
-                >
-                  Sign Out
-                </button>
-              )}
-              <button
-                onClick={handleOpenHelp}
-                aria-label="Help"
-                title="Help"
-                className="ml-3 p-3 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all hover:scale-105 focus-ring"
-              >
-                <FiHelpCircle size={20} />
               </button>
             </div>
           </div>

@@ -22,6 +22,18 @@ jobs:
 
       - run: pnpm install
 
+      - name: Generate version and write to public/version.json
+        run: |
+          SHORT_SHA="${GITHUB_SHA::7}"
+          TS=$(date -u +'%Y.%m.%d.%H%M%S')
+          BRANCH="${GITHUB_REF_NAME:-${GITHUB_REF##*/}}"
+          VERSION="$TS-$SHORT_SHA"
+          if [ "$BRANCH" != "main" ]; then
+            VERSION="$BRANCH-$VERSION"
+          fi
+          echo "APP_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "{\"version\":\"$VERSION\"}" > public/version.json
+
       - run: pnpm run build
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
