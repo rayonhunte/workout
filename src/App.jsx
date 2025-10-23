@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { FiPlus, FiActivity, FiTrendingUp, FiMenu } from 'react-icons/fi';
 import WorkoutCard from './components/WorkoutCard';
-import WorkoutDetails from './components/WorkoutDetails';
+// Routed components are rendered via AppRoutes
 import AddWorkoutModal from './components/AddWorkoutModal';
-import Help from './components/Help';
 import ThemeToggle from './components/ThemeToggle';
 import GoogleSignInButton from './components/GoogleSignInButton';
 import SideMenu from './components/SideMenu';
 import Glucose from './components/Glucose';
-import Report from './components/Report';
+import { renderAppRoutes } from './components/AppRoutes';
 import { auth } from './firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 
@@ -357,24 +356,15 @@ function App() {
     return () => window.removeEventListener('hashchange', applyHashRoute);
   }, [workouts]);
 
-  if (currentView === 'details' && selectedWorkout) {
-    return (
-      <WorkoutDetails
-        workout={selectedWorkout}
-        onBack={handleBackToList}
-        onUpdateWorkout={handleUpdateWorkout}
-        onDelete={handleDeleteWorkout}
-      />
-    );
-  }
-
-  if (currentView === 'help') {
-    return <Help onBack={handleBackToList} />;
-  }
-
-  if (currentView === 'report') {
-    return <Report workouts={workouts} />;
-  }
+  const routed = renderAppRoutes({
+    currentView,
+    selectedWorkout,
+    onBackToList: handleBackToList,
+    onUpdateWorkout: handleUpdateWorkout,
+    onDeleteWorkout: handleDeleteWorkout,
+    workouts,
+  });
+  if (routed) return routed;
 
   if (!user) {
     return (

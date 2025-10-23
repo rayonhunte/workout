@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { FiBarChart2, FiCalendar, FiCheckCircle, FiList, FiTrendingUp } from 'react-icons/fi';
+import { FiBarChart2, FiCalendar, FiCheckCircle, FiList, FiTrendingUp, FiArrowLeft } from 'react-icons/fi';
 
 const toLocalDate = (ymd) => new Date(`${ymd}T00:00:00`);
 
@@ -92,14 +92,22 @@ const Section = ({ title, summary }) => {
   );
 };
 
-const Report = ({ workouts }) => {
+const Report = ({ workouts, onBack }) => {
   const weekly = useMemo(() => summarize(workouts, (d) => withinLastNDays(d, 7)), [workouts]);
   const monthly = useMemo(() => summarize(workouts, inCurrentMonth), [workouts]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 dark:from-gray-900 dark:via-gray-900/80 dark:to-gray-900 animate-fade-in">
       <div className="glass shadow-soft border-b border-white/20">
-        <div className="max-w-md mx-auto mobile-padding py-4 sm:py-6">
+        <div className="max-w-md mx-auto mobile-padding py-4 sm:py-6 flex items-center">
+          <button
+            onClick={onBack}
+            aria-label="Back"
+            title="Back"
+            className="mr-3 p-3 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 hover:from-gray-200 hover:to-gray-300 dark:hover:from-gray-600 dark:hover:to-gray-500 transition-all duration-300 hover:scale-110 active:scale-95 shadow-md hover:shadow-lg border border-gray-200/50 dark:border-gray-700/50 focus-ring"
+          >
+            <FiArrowLeft size={20} className="text-gray-700 dark:text-gray-100" />
+          </button>
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200">
               <FiBarChart2 />
@@ -121,4 +129,3 @@ const Report = ({ workouts }) => {
 };
 
 export default Report;
-
