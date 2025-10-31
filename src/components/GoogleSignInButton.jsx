@@ -3,12 +3,38 @@ import { auth, provider } from "../firebase";
 import { signInWithPopup } from "firebase/auth";
 
 export default function GoogleSignInButton({ onSignIn }) {
-  const handleSignIn = async () => {
+  const handleSignIn = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     try {
+      // Clear any hash that might interfere with popup
+      const currentHash = window.location.hash;
+      if (currentHash && !currentHash.includes('__')) {
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      }
+      
       const result = await signInWithPopup(auth, provider);
       if (onSignIn) onSignIn(result.user);
+      
+      // Clear any auth-related hash fragments after successful sign-in
+      setTimeout(() => {
+        const hash = window.location.hash;
+        if (hash && (hash.includes('access_token') || hash.includes('id_token') || hash.includes('authuser'))) {
+          window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+      }, 100);
     } catch (error) {
-      alert("Sign in failed: " + error.message);
+      // Handle specific error codes
+      if (error.code === 'auth/popup-blocked') {
+        alert('Popup was blocked. Please allow popups for this site and try again.');
+      } else if (error.code === 'auth/popup-closed-by-user') {
+        // User closed the popup - don't show error, just return
+        return;
+      } else {
+        alert("Sign in failed: " + error.message);
+      }
+      console.error('Sign in error:', error);
     }
   };
 

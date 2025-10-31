@@ -4,6 +4,7 @@ import { readFileSync } from 'fs'
 
 // Determine app version at build time.
 // Prefer APP_VERSION env (set by CI), fall back to package.json version.
+// eslint-disable-next-line no-undef
 let appVersion = process.env.APP_VERSION
 try {
   if (!appVersion) {

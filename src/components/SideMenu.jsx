@@ -2,6 +2,7 @@ import React, { useCallback, useEffect } from 'react';
 import { FiX, FiHome, FiDroplet, FiHelpCircle, FiLogOut, FiRefreshCcw, FiInfo, FiBarChart2 } from 'react-icons/fi';
 
 const SideMenu = ({ open, onClose, onNavigate, onSignOut, children }) => {
+  // eslint-disable-next-line no-undef
   const currentVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.0.0';
 
   const checkForUpdates = useCallback(async () => {

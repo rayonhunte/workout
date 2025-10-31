@@ -35,17 +35,23 @@ const BloodSugarSummary = ({ readings = [] }) => {
     }
 
     const totals = statsSource.reduce(
-      (acc, r) => ({
-        count: acc.count + 1,
-        meter: acc.meter + (r.meter ?? 0),
-        cgm: acc.cgm + (r.cgm ?? 0),
-        diff: acc.diff + (r.difference ?? (r.meter - r.cgm) ?? 0),
-        absDiff: acc.absDiff + Math.abs(r.difference ?? (r.meter - r.cgm) ?? 0),
-        latest:
-          acc.latest?.recordedAt && new Date(acc.latest.recordedAt) > new Date(r.recordedAt || 0)
-            ? acc.latest
-            : r,
-      }),
+      (acc, r) => {
+        const meterValue = r.meter ?? 0;
+        const cgmValue = r.cgm ?? 0;
+        const meterCgmDiff = r.meter - r.cgm;
+        const diffValue = r.difference ?? meterCgmDiff ?? 0;
+        return {
+          count: acc.count + 1,
+          meter: acc.meter + meterValue,
+          cgm: acc.cgm + cgmValue,
+          diff: acc.diff + diffValue,
+          absDiff: acc.absDiff + Math.abs(diffValue),
+          latest:
+            acc.latest?.recordedAt && new Date(acc.latest.recordedAt) > new Date(r.recordedAt || 0)
+              ? acc.latest
+              : r,
+        };
+      },
       { count: 0, meter: 0, cgm: 0, diff: 0, absDiff: 0, latest: null }
     );
 
@@ -85,7 +91,7 @@ const BloodSugarSummary = ({ readings = [] }) => {
         </div>
         <div className="rounded-xl border border-rose-200/70 dark:border-rose-900/40 bg-white/70 dark:bg-gray-900/60 p-3">
           <span className="text-[10px] uppercase tracking-wide text-gray-500 dark:text-gray-400 font-semibold">Avg Difference</span>
-          <div className={`text-lg font-bold mt-1 ${avgDiff >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+          <div className={`text-lg font-bold mt-1 ${avgDiff != null && avgDiff >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
             {formatNumber(avgDiff, 1)} mg/dL
           </div>
           <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">|Δ| avg: {formatNumber(avgDiffAbs, 1)} mg/dL</p>

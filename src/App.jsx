@@ -322,9 +322,30 @@ function App() {
   // no-op placeholder for backwards compatibility of initialTemplate feature
 
   // Listen to hash changes to support browser back/forward
+  // Only apply routing when user is authenticated to avoid interfering with auth popup
   useEffect(() => {
+    if (!user) {
+      // Clear any hash that might interfere with authentication
+      if (window.location.hash && !window.location.hash.includes('__')) {
+        // Don't clear hash during auth flow (Firebase may use special params)
+        const hash = window.location.hash;
+        if (!hash.includes('access_token') && !hash.includes('id_token') && !hash.includes('authuser')) {
+          window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+      }
+      return;
+    }
+
     const applyHashRoute = () => {
+      // Skip routing if user is not authenticated
+      if (!user) return;
+      
       const hash = (window.location.hash || '').replace(/^#/, '');
+      // Ignore Firebase auth-related hash fragments
+      if (hash.includes('access_token') || hash.includes('id_token') || hash.includes('authuser')) {
+        return;
+      }
+      
       if (hash === 'help') {
         setCurrentView('help');
         return;
@@ -354,7 +375,7 @@ function App() {
     applyHashRoute();
     window.addEventListener('hashchange', applyHashRoute);
     return () => window.removeEventListener('hashchange', applyHashRoute);
-  }, [workouts]);
+  }, [workouts, user]);
 
   const routed = renderAppRoutes({
     currentView,

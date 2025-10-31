@@ -20,6 +20,14 @@ const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
+
+// Configure provider to use popup (explicit) and set redirect URI
+provider.setCustomParameters({
+  prompt: 'select_account'
+});
+// Ensure we're using popup mode explicitly
+auth.languageCode = 'en';
+
 const db = getFirestore(app);
 
 export { app, analytics, auth, provider, db };
