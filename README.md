@@ -73,3 +73,17 @@ The authenticated home now opens Today with A/B/C templates, resumable set loggi
 See [docs/FITNESS_APP_PLAN.md](docs/FITNESS_APP_PLAN.md) for the redacted specification, schema mapping, test commands and release requirements. New Firestore ownership rules are checked into `firestore.rules` and tested locally through `firebase.emulator.json`; they have **not** been deployed. Review the existing live rules before merging and deploying the new path policy.
 
 Run `pnpm test` and `pnpm lint` for local checks. With Java 21+ and Firebase CLI available, run `pnpm emulators`, then `pnpm test:rules` and `pnpm test:browser` in another terminal. Tests use a demo project; browser tests run on ports 5198/5199.
+
+
+## Hosting deployments
+
+GitHub Actions builds and deploys on pushes to these branches:
+
+| Branch | Hosting target | Permanent site |
+| --- | --- | --- |
+| `dev` | `dev` | https://allwork-dev-e32b6.web.app |
+| `main` | `production` | https://allwork-e32b6.web.app |
+
+Both use their site's `live` channel, which has no preview expiration. The workflow explicitly selects one target so a dev push only publishes the dev site. The old `dev` preview URL on the production site is superseded and can expire normally.
+
+Both sites still use the same Firebase project (`allwork-e32b6`), authentication and Firestore database. Hosting deployment does not deploy Firestore rules. For manual deployment, always select the intended target: `firebase deploy --only hosting:dev --project allwork-e32b6` (or `hosting:production`).

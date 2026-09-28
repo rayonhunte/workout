@@ -40,5 +40,7 @@ jobs:
         with:
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
           firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}"
-          channelId: ${{ github.ref == 'refs/heads/main' && 'live' || 'dev' }}
+          # Each branch deploys to its own site's permanent live channel.
+          target: ${{ github.ref == 'refs/heads/main' && 'production' || 'dev' }}
+          channelId: live
           projectId: allwork-e32b6

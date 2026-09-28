@@ -287,7 +287,7 @@ Review per-user Firebase access rules and storage rules where relevant. A signed
 
 ## 15. Repository audit and implementation decisions (2026-09-28)
 
-- Existing stack: React 19, Vite 7, Tailwind 3, Firebase Auth (Google popup), Firestore. Hosting targets `allwork-e32b6`; dev is a Hosting preview channel in the same project. No separate development database is configured.
+- Existing stack: React 19, Vite 7, Tailwind 3, Firebase Auth (Google popup), Firestore. Hosting uses separate permanent sites in project `allwork-e32b6`: `dev` targets `allwork-dev-e32b6`, and `main` targets `allwork-e32b6`. Both use the live channel with no preview expiration. No separate development database is configured.
 - Legacy collections: `workouts` (uid, date, name, exercise-level sets/reps/completed and optional bloodSugar before/after), `workoutTemplates` (uid, name, exercises, createdAt), `bloodSugarReadings` (uid, meter/cgm comparison, recordedAt). Legacy glucose displays use mg/dL; new readings explicitly store their unit. No legacy load or RIR history can be inferred.
 - Existing Google auth, custom workouts, template creation, workout deletion, reports and meter/CGM comparison remain available under Previous workouts. No migration or rewrite of legacy records is needed.
 - Additive model: `users/{uid}/fitnessRecords/{recordId}` with schemaVersion 1, kind, revision, operationId and data. Kinds: profile (preferences + enrollment), template (user-edited version by phase/workout), session (immutable target snapshot + editable actual results), measurement (weight/waist), activity (recovery/cardio). Deterministic profile/template IDs and UUID session/measurement/activity IDs make retries idempotent.
@@ -301,7 +301,7 @@ Review per-user Firebase access rules and storage rules where relevant. A signed
 
 ## 16. Implemented behavior and validation
 
-Implemented on `dev`. Validation used local demo emulators; production user records were not read or modified. Pushing `dev` triggers the existing Hosting preview workflow. Database rules are a separate release step and have not been deployed.
+Implemented on `dev`. Validation used local demo emulators; production user records were not read or modified. Pushing `dev` triggers Hosting deployment to the permanent `allwork-dev-e32b6` site. Database rules are a separate release step and have not been deployed.
 
 - Today is the default authenticated screen. Previous workouts, reports, custom template creation and the original meter/CGM tools remain reachable. Google authentication is preserved.
 - Foundation A/B/C are bundled templates; no database seeding or synthetic history. Per-phase user templates have deterministic IDs and explicit accept/save. Build extras are optional edits; Phase 3 B/C copy the last accepted Build targets. Week changes and repeats are manual.
@@ -324,7 +324,7 @@ Validation (2026-09-28):
 
 ### Remaining release steps and deliberate limits
 
-1. Compare `firestore.rules` with the currently deployed rules before deploying any rules. The supplied rules are tested proposals; the live policy is unknown. Merge any unrelated deployed collection policies instead of blindly replacing them. `firebase.json` and the Hosting workflow remain unchanged so this work does not silently deploy database rules. New cloud writes may be denied until the reviewed new path rule is installed; the app shows that failure and retains drafts.
+1. Compare `firestore.rules` with the currently deployed rules before deploying any rules. The supplied rules are tested proposals; the live policy is unknown. Merge any unrelated deployed collection policies instead of blindly replacing them. `firebase.json` and the workflow deploy only Hosting, explicitly selecting the branch’s site target; they do not deploy database rules. New cloud writes may be denied until the reviewed new path rule is installed; the app shows that failure and retains drafts.
 2. Obtain clinical review of the safety copy before release. Source links were checked on 2026-09-28; that is source verification, not clinical approval. Phase 2 extras and Phase 3 B/C remain proposals for user review.
 3. Personal values from the supplied brief are not seeded into public code or repository docs. Enter private profile/context/goals in Settings. The original supplied file outside the repository retains those values.
 4. Photos, nutrition planning, medication management, automatic clinical thresholds, background cross-device merging and automatic phase advancement are intentionally omitted. A conflicting record requires an explicit choice; this avoids guessing which health/workout entry to keep.
