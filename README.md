@@ -64,3 +64,12 @@ This project uses:
 - [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) for Fast Refresh
 - ESLint for code quality
 - Tailwind CSS for styling
+
+
+## 12-week program
+
+The authenticated home now opens Today with A/B/C templates, resumable set logging, program review, progress and private preferences. Original workouts, reports and meter/CGM tracking remain under **Previous workouts & glucose tools**.
+
+See [docs/FITNESS_APP_PLAN.md](docs/FITNESS_APP_PLAN.md) for the redacted specification, schema mapping, test commands and release requirements. New Firestore ownership rules are checked into `firestore.rules` and tested locally through `firebase.emulator.json`; they have **not** been deployed. Review the existing live rules before merging and deploying the new path policy.
+
+Run `pnpm test` and `pnpm lint` for local checks. With Java 21+ and Firebase CLI available, run `pnpm emulators`, then `pnpm test:rules` and `pnpm test:browser` in another terminal. Tests use a demo project; browser tests run on ports 5198/5199.

@@ -13,7 +13,12 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "postinstall": "echo 'Installed with pnpm'"
+    "postinstall": "echo 'Installed with pnpm'",
+    "test": "node --test tests/fitness.test.mjs",
+    "test:rules": "node --test tests/rules.test.mjs",
+    "test:browser": "playwright test",
+    "dev:emulator": "VITE_USE_EMULATORS=true vite --host 127.0.0.1",
+    "emulators": "firebase emulators:start --project demo-workout --config firebase.emulator.json"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.7",
@@ -24,6 +29,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
+    "@firebase/rules-unit-testing": "^5.0.2",
+    "@playwright/test": "^1.63.0",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
     "@vitejs/plugin-react": "^5.0.0",

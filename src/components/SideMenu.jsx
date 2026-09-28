@@ -73,12 +73,13 @@ const SideMenu = ({ open, onClose, onNavigate, onSignOut, children }) => {
         </div>
 
         <nav className="p-3 space-y-1">
+          <button onClick={() => { onNavigate?.('fitness'); onClose?.(); }} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-left"><FiHome /><span className="font-medium">Today · 12-week program</span></button>
           <button
             onClick={() => { onNavigate?.('home'); onClose?.(); }}
             className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-left"
           >
             <FiHome className="text-gray-600 dark:text-gray-300" />
-            <span className="font-medium">Home</span>
+            <span className="font-medium">Previous workouts</span>
           </button>
           <button
             onClick={() => { onNavigate?.('report'); onClose?.(); }}

@@ -1,0 +1,27 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function ownsExisting() { return signedIn() && resource.data.uid == request.auth.uid; }
+    function ownsNew() { return signedIn() && request.resource.data.uid == request.auth.uid; }
+    match /{collection}/{record} {
+      allow read, delete: if collection in ['workouts', 'workoutTemplates', 'bloodSugarReadings'] && ownsExisting();
+      allow create: if collection in ['workouts', 'workoutTemplates', 'bloodSugarReadings'] && ownsNew();
+      allow update: if collection in ['workouts', 'workoutTemplates', 'bloodSugarReadings'] && ownsExisting() && ownsNew();
+    }
+    match /users/{uid}/fitnessRecords/{record} {
+      function owner() { return signedIn() && request.auth.uid == uid; }
+      function valid() {
+        return request.resource.data.keys().hasOnly(['schemaVersion', 'kind', 'data', 'revision', 'operationId'])
+          && request.resource.data.schemaVersion == 1
+          && request.resource.data.kind in ['profile', 'template', 'session', 'measurement', 'activity']
+          && request.resource.data.data is map
+          && request.resource.data.revision is int;
+      }
+      allow read, delete: if owner();
+      allow create: if owner() && valid() && request.resource.data.revision == 1;
+      allow update: if owner() && valid() && request.resource.data.kind == resource.data.kind
+        && request.resource.data.revision == resource.data.revision + 1;
+    }
+  }
+}

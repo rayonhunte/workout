@@ -9,6 +9,7 @@ import SideMenu from './components/SideMenu';
 import Glucose from './components/Glucose';
 import { renderAppRoutes } from './components/AppRoutes';
 import { auth } from './firebase';
+import FitnessApp from './fitness/FitnessApp';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 
 import { listenUserWorkouts, addUserWorkout, updateUserWorkout, deleteUserWorkout } from './utils/firestoreWorkouts';
@@ -20,7 +21,7 @@ function App() {
   const [bloodSugarReadings, setBloodSugarReadings] = useState([]);
   const [selectedWorkout, setSelectedWorkout] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [currentView, setCurrentView] = useState('list'); // 'list' | 'details' | 'help' | 'glucose' | 'report'
+  const [currentView, setCurrentView] = useState('fitness'); // 'list' | 'details' | 'help' | 'glucose' | 'report'
   const [filter, setFilter] = useState('all'); // all | today | completed
   const [filterDate, setFilterDate] = useState(''); // optional date filter (YYYY-MM-DD)
   const [user, setUser] = useState(null);
@@ -144,10 +145,14 @@ function App() {
 
   const handleNavigate = (destination) => {
     try {
-      if (destination === 'home') {
+      if (destination === 'fitness') {
+        setSelectedWorkout(null);
+        setCurrentView('fitness');
+        window.location.hash = 'fitness';
+      } else if (destination === 'home') {
         setSelectedWorkout(null);
         setCurrentView('list');
-        window.location.hash = '';
+        window.location.hash = 'legacy';
       } else if (destination === 'glucose') {
         setSelectedWorkout(null);
         setCurrentView('glucose');
@@ -174,7 +179,7 @@ function App() {
       if ((window.location.hash || '').startsWith('#workout/')) {
         window.history.back();
       } else if (window.location.hash) {
-        window.location.hash = '';
+        window.location.hash = 'legacy';
       }
     } catch {
       // ignore
@@ -346,6 +351,10 @@ function App() {
         return;
       }
       
+      if (hash === 'fitness' || hash === '') {
+        setCurrentView('fitness');
+        return;
+      }
       if (hash === 'help') {
         setCurrentView('help');
         return;
@@ -377,7 +386,9 @@ function App() {
     return () => window.removeEventListener('hashchange', applyHashRoute);
   }, [workouts, user]);
 
-  const routed = renderAppRoutes({
+  if (user && currentView === 'fitness') return <FitnessApp key={user.uid} uid={user.uid} onLegacy={() => handleNavigate('home')} onSignOut={() => signOut(auth)} />;
+
+  const routed = user && renderAppRoutes({
     currentView,
     selectedWorkout,
     onBackToList: handleBackToList,

@@ -17,7 +17,7 @@ const STORE_NAME = 'logs';
 class Logger {
   constructor() {
     this.db = null;
-    this.initDB();
+    this.initDB().catch(() => {});
     this.setupGlobalErrorHandlers();
   }
 
@@ -83,8 +83,8 @@ class Logger {
       level,
       message,
       userAgent: navigator.userAgent,
-      url: window.location.href,
-      data,
+      url: window.location.pathname,
+      data: { code: data?.code || 'redacted' },
     };
   }
 
@@ -96,7 +96,7 @@ class Logger {
     
     // Log to console based on level
     const consoleMethod = level === 'ERROR' ? 'error' : level === 'WARN' ? 'warn' : 'log';
-    console[consoleMethod](`[${entry.timestamp}] ${level}: ${message}`, data);
+    console[consoleMethod](`[${entry.timestamp}] ${level}: ${message}`);
 
     // Save to IndexedDB
     this.saveToDB(entry);
@@ -139,7 +139,7 @@ class Logger {
    * (e.g., Sentry, LogRocket, custom backend)
    * Implement based on your monitoring service
    */
-  async sendToRemote(entry) {
+  async sendToRemote() {
     // Example implementation (disabled by default):
     // if (process.env.REACT_APP_LOG_ENDPOINT) {
     //   try {
