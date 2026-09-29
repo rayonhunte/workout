@@ -322,6 +322,15 @@ Validation (2026-09-28):
 - `pnpm build`: passes. Existing large-bundle and stale browser-support database warnings remain nonblocking.
 - Tests use the `demo-workout` Auth/Firestore emulators. The original Google popup/provider is unchanged; live Google sign-in and live rules have not been exercised.
 
+UI refresh (2026-09-29):
+
+- Compact page titles and a quiet saved indicator replace the large introductory header. Offline, pending writes and sync failures retain visible recovery controls.
+- Program uses a desktop sidebar for phases and the weekly schedule, alongside A/B/C workout cards and readable exercise targets. Phones use a single-column layout; light and dark themes are supported.
+- Browsing a phase or week only previews its targets. Changing enrollment requires the explicit “Make Week N current” action. Later-phase target acceptance remains explicit.
+- Schedule fields open through Edit; template fields open through Customize workout with save/cancel actions. Fixed targets display once (for example, “3 × 10 reps”).
+- Diagnostics moved from the floating Logs button into Settings for authorized users; the existing keyboard shortcut remains available.
+- Validation: lint, model/outbox checks, production build and all five Chromium browser suites pass. The added suite covers desktop/mobile layouts, week preview isolation, customization save/cancel persistence, schedule editing, dark mode and diagnostics access. Screenshots were reviewed on desktop and mobile.
+
 ### Remaining release steps and deliberate limits
 
 1. Compare `firestore.rules` with the currently deployed rules before deploying any rules. The supplied rules are tested proposals; the live policy is unknown. Merge any unrelated deployed collection policies instead of blindly replacing them. `firebase.json` and the workflow deploy only Hosting, explicitly selecting the branch’s site target; they do not deploy database rules. New cloud writes may be denied until the reviewed new path rule is installed; the app shows that failure and retains drafts.

@@ -141,11 +141,12 @@ test("B/C templates, unilateral work, editable phase review and unit-safe progre
     .getByRole("button", { name: "Finish workout", exact: true })
     .click();
   await page.getByRole("button", { name: "Program", exact: true }).click();
-  await page.getByRole("button", { name: "W5", exact: true }).click();
+  await page.getByRole("button", { name: "Browse Build phase" }).click();
+  await page.getByRole("button", { name: "Make Week 5 current" }).click();
   await expect(
-    page.getByText("Proposed defaults — review and edit", { exact: true }),
+    page.getByText("Suggested targets · review before training"),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Accept & save template" }).click();
+  await page.getByRole("button", { name: "Use these targets" }).click();
   await page.getByRole("button", { name: "Today", exact: true }).click();
   await page.getByRole("button", { name: "Start Workout A" }).click();
   await expect(
@@ -218,4 +219,92 @@ test("completed A, undo, unknown RIR, account cache and second-tab protection", 
       Object.keys(localStorage).filter((k) => k.startsWith("fitness-v1:")),
     ),
   ).toHaveLength(0);
+});
+
+test("Program previews do not change enrollment; customization and schedule editing stay optional", async ({
+  page,
+}) => {
+  await login(page);
+  await page.getByRole("button", { name: "Program", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Your program", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "View Workout A" }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByLabel("Minimum target RIR")).toHaveCount(0);
+  await expect(
+    page.getByLabel("Preferred start time (after 11 AM)"),
+  ).toHaveCount(0);
+  await expect(page.getByText("3 × 10 reps", { exact: true })).toBeVisible();
+  await expect(page.getByText("3 × 10–10 reps", { exact: true })).toHaveCount(
+    0,
+  );
+  await page.setViewportSize({ width: 1440, height: 1050 });
+  await page.screenshot({
+    path: "test-results/program-desktop.png",
+    fullPage: true,
+  });
+  const sidebar = await page.locator(".fit-program-sidebar").boundingBox();
+  const main = await page.locator(".fit-program-main").boundingBox();
+  expect(main.x).toBeGreaterThan(sidebar.x + sidebar.width);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.locator("body")).toHaveJSProperty("scrollWidth", 390);
+  await page.screenshot({
+    path: "test-results/program-mobile.png",
+    fullPage: true,
+  });
+  await page.getByRole("button", { name: "Browse Build phase" }).click();
+  await expect(page.locator(".fit-header-subtitle")).toContainText("Week 1");
+  await expect(
+    page.getByText("Previewing Week 5. You’re still on Week 1."),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Today", exact: true }).click();
+  await expect(page.locator(".fit-hero")).toContainText("WEEK 1");
+  await page.getByRole("button", { name: "Program", exact: true }).click();
+  await page.getByRole("button", { name: "View Workout B" }).click();
+  await expect(
+    page.getByRole("region", { name: "Workout B details" }),
+  ).toContainText("Suitcase carry");
+  await page.getByRole("button", { name: "Customize workout" }).click();
+  await page.getByLabel("Minimum target RIR").fill("3");
+  await page.getByRole("button", { name: "Cancel changes" }).click();
+  await expect(page.locator(".fit-workout-facts")).toContainText(
+    "2–3 reps in reserve",
+  );
+  await page.getByRole("button", { name: "Customize workout" }).click();
+  await page.getByLabel("Minimum target RIR").fill("3");
+  await page.getByRole("button", { name: "Save workout", exact: true }).click();
+  await expect(page.locator(".fit-workout-facts")).toContainText(
+    "3–4 reps in reserve",
+  );
+  await page.getByRole("button", { name: "Edit schedule" }).click();
+  await page.getByLabel("Preferred start time (after 11 AM)").fill("12:00");
+  await page
+    .getByRole("button", { name: "Save schedule", exact: true })
+    .click();
+  await expect(page.getByText("12:00 preferred start")).toBeVisible();
+  await expect(
+    page.getByLabel("Preferred start time (after 11 AM)"),
+  ).toHaveCount(0);
+  await saved(page);
+  await page.reload();
+  await page.getByRole("button", { name: "Program", exact: true }).click();
+  await expect(page.locator(".fit-header-subtitle")).toContainText("Week 1");
+  await page.getByRole("button", { name: "View Workout B" }).click();
+  await expect(page.locator(".fit-workout-facts")).toContainText(
+    "3–4 reps in reserve",
+  );
+  await page.getByRole("button", { name: "Switch to dark mode" }).click();
+  await page.screenshot({
+    path: "test-results/program-dark-mobile.png",
+    fullPage: true,
+    animations: "disabled",
+  });
+  await page.getByRole("button", { name: "Settings", exact: true }).click();
+  await page.getByText("Support & diagnostics", { exact: true }).click();
+  await page.getByRole("button", { name: "Open diagnostics" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Debug Console", exact: true }),
+  ).toBeVisible();
 });

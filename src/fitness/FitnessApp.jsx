@@ -5,6 +5,7 @@ import {
   FiBarChart2,
   FiCalendar,
   FiSettings,
+  FiCheck,
 } from "react-icons/fi";
 import { useFitness } from "./useFitness";
 import {
@@ -89,47 +90,79 @@ export default function FitnessApp({ uid, onLegacy, onSignOut }) {
         </Panel>
       </div>
     );
+  const syncLabel = data.error
+    ? "Sync needs attention"
+    : !data.ready && data.records.length === 0
+      ? "Loading…"
+      : !data.online
+        ? "Offline · saved on device"
+        : data.pending
+          ? "Saving…"
+          : "Saved";
+  const title = session
+    ? "Your workout"
+    : {
+        Today: "Today",
+        Program: "Your program",
+        Progress: "Your progress",
+        Settings: "Your preferences",
+      }[tab];
   return (
-    <div className="fitness">
-      <header className="fit-header">
+    <div
+      className={`fitness ${tab === "Program" && !session ? "fitness-program" : ""}`}
+    >
+      <header className="fit-header fit-header-compact">
         <div>
-          <span className="fit-eyebrow">YOUR TRAINING SPACE</span>
-          <h1>
-            Build strength.
-            <br />
-            <span>Keep showing up.</span>
-          </h1>
+          <span className="fit-eyebrow">WORKOUT</span>
+          <h1>{title}</h1>
+          <p className="fit-header-subtitle">
+            Week {profile.week} <span aria-hidden="true">·</span>{" "}
+            {phaseNames[phase - 1]}
+            {profile.paused ? " · Paused" : ""}
+          </p>
         </div>
-        <ThemeToggle />
-      </header>
-      <div
-        className={`fit-sync ${data.error ? "fit-error" : ""}`}
-        role="status"
-      >
-        {data.error ||
-          (!data.ready && data.records.length === 0
-            ? "Loading cloud records…"
-            : !data.online
-              ? "Offline · drafts saved on this device"
-              : data.pending
-                ? `Saving · ${data.pending} device draft${data.pending === 1 ? "" : "s"} awaiting cloud`
-                : "Saved · synced with cloud")}
-        {(data.error || data.pending > 0) && (
-          <button onClick={() => data.store.retry()}>Retry sync</button>
-        )}
-        {data.error && (
-          <button
-            onClick={() =>
-              downloadJson("fitness-recovery.json", {
-                records: data.store.records,
-                unreadableCache: data.store.corruptCache,
-              })
+        <div className="fit-header-tools">
+          <div
+            className={`fit-save-indicator ${data.error ? "needs-attention" : ""}`}
+            role="status"
+            title={
+              syncLabel === "Saved" ? "Saved · synced with cloud" : syncLabel
             }
           >
-            Export device backup
-          </button>
-        )}
-      </div>
+            {syncLabel === "Saved" && <FiCheck aria-hidden="true" />}
+            {syncLabel}
+            {syncLabel === "Saved" && (
+              <span className="sr-only"> · synced with cloud</span>
+            )}
+          </div>
+          <ThemeToggle />
+        </div>
+      </header>
+      {(data.error || !data.online || data.pending > 0) && (
+        <div className={`fit-sync ${data.error ? "fit-error" : ""}`}>
+          <span>
+            {data.error ||
+              (!data.online
+                ? "Drafts stay on this device until you reconnect."
+                : "Your changes are saved on this device and waiting to sync.")}
+          </span>
+          {(data.error || data.pending > 0) && (
+            <button onClick={() => data.store.retry()}>Retry sync</button>
+          )}
+          {data.error && (
+            <button
+              onClick={() =>
+                downloadJson("fitness-recovery.json", {
+                  records: data.store.records,
+                  unreadableCache: data.store.corruptCache,
+                })
+              }
+            >
+              Export device backup
+            </button>
+          )}
+        </div>
+      )}
       {Object.keys(data.conflicts).map((id) => (
         <Panel key={id} title="Another device changed this record">
           <p>
@@ -221,7 +254,10 @@ export default function FitnessApp({ uid, onLegacy, onSignOut }) {
                 </p>
                 <button
                   className="fit-primary"
-                  disabled={(profile.paused && !active) || (!data.ready && data.online && data.records.length === 0)}
+                  disabled={
+                    (profile.paused && !active) ||
+                    (!data.ready && data.online && data.records.length === 0)
+                  }
                   onClick={() => start()}
                 >
                   {active ? "Resume workout" : `Start Workout ${profile.next}`}{" "}

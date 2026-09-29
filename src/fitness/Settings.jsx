@@ -1,3 +1,4 @@
+import { auth } from "../firebase";
 import { useState } from "react";
 import { convert, round } from "./model";
 import { Panel, Field, NumberField, Select } from "./ui";
@@ -139,6 +140,20 @@ export default function Settings({ profile, save, data, onSignOut }) {
           Clear synced device cache & sign out
         </button>
         <button onClick={onSignOut}>Sign out · keep device drafts</button>
+        {(import.meta.env.DEV ||
+          auth.currentUser?.email === "rayon.hunte@gmail.com") && (
+          <details>
+            <summary>Support & diagnostics</summary>
+            <p>Use diagnostics to investigate app problems.</p>
+            <button
+              onClick={() =>
+                window.dispatchEvent(new Event("workout:open-debug"))
+              }
+            >
+              Open diagnostics
+            </button>
+          </details>
+        )}
       </Panel>
     </>
   );

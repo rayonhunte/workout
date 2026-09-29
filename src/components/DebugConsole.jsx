@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { FiX, FiDownload, FiTrash2 } from 'react-icons/fi';
-import logger from '../utils/logger';
-import { auth } from '../firebase';
+import React, { useState, useEffect } from "react";
+import { FiX, FiDownload, FiTrash2 } from "react-icons/fi";
+import logger from "../utils/logger";
+import { auth } from "../firebase";
 
 /**
  * Debug Console - displays and manages application logs
@@ -11,7 +11,7 @@ import { auth } from '../firebase';
 export default function DebugConsole() {
   const [isOpen, setIsOpen] = useState(false);
   const [logs, setLogs] = useState([]);
-  const [filter, setFilter] = useState('ERROR'); // ERROR, WARN, INFO, DEBUG, ALL
+  const [filter, setFilter] = useState("ERROR"); // ERROR, WARN, INFO, DEBUG, ALL
   const [autoScroll, setAutoScroll] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -19,11 +19,14 @@ export default function DebugConsole() {
   // Check if user is authorized to see debug console
   useEffect(() => {
     const checkAuthorization = () => {
-      const isLocalDev = import.meta.env.DEV || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      
+      const isLocalDev =
+        import.meta.env.DEV ||
+        window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1";
+
       // Check if current user is authorized
       const unsubscribe = auth.onAuthStateChanged((user) => {
-        const isAuthorizedUser = user?.email === 'rayon.hunte@gmail.com';
+        const isAuthorizedUser = user?.email === "rayon.hunte@gmail.com";
         setIsAuthorized(isLocalDev || isAuthorizedUser);
         setIsLoading(false);
       });
@@ -52,7 +55,7 @@ export default function DebugConsole() {
   };
 
   const handleClear = async () => {
-    if (window.confirm('Are you sure you want to clear all logs?')) {
+    if (window.confirm("Are you sure you want to clear all logs?")) {
       await logger.clearLogs();
       setLogs([]);
     }
@@ -67,34 +70,39 @@ export default function DebugConsole() {
     if (!isAuthorized) return;
 
     const handleKeyPress = (e) => {
-      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+      const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
       const isModifierKey = isMac ? e.metaKey : e.ctrlKey;
 
-      if (isModifierKey && e.shiftKey && e.key === 'L') {
+      if (isModifierKey && e.shiftKey && e.key === "L") {
         e.preventDefault();
         setIsOpen((prev) => !prev);
       }
     };
 
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
+    const openDiagnostics = () => setIsOpen(true);
+    window.addEventListener("keydown", handleKeyPress);
+    window.addEventListener("workout:open-debug", openDiagnostics);
+    return () => {
+      window.removeEventListener("keydown", handleKeyPress);
+      window.removeEventListener("workout:open-debug", openDiagnostics);
+    };
   }, [isAuthorized]);
 
   const filteredLogs =
-    filter === 'ALL' ? logs : logs.filter((log) => log.level === filter);
+    filter === "ALL" ? logs : logs.filter((log) => log.level === filter);
 
   const getLevelColor = (level) => {
     switch (level) {
-      case 'ERROR':
-        return 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20';
-      case 'WARN':
-        return 'text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20';
-      case 'INFO':
-        return 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20';
-      case 'DEBUG':
-        return 'text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/20';
+      case "ERROR":
+        return "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20";
+      case "WARN":
+        return "text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20";
+      case "INFO":
+        return "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20";
+      case "DEBUG":
+        return "text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/20";
       default:
-        return 'text-gray-600 dark:text-gray-400';
+        return "text-gray-600 dark:text-gray-400";
     }
   };
 
@@ -103,23 +111,16 @@ export default function DebugConsole() {
     return null;
   }
 
-  if (!isOpen) {
-    return (
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 px-3 py-2 bg-gray-800 dark:bg-gray-700 text-white text-xs rounded-lg hover:bg-gray-900 transition z-40 hover:scale-105"
-        title="Open Debug Console (Cmd+Shift+L)"
-      >
-        🐛 Logs
-      </button>
-    );
-  }
+  // Diagnostics remain available by keyboard shortcut and the Settings action.
+  if (!isOpen) return null;
 
   return (
     <div className="fixed bottom-0 right-0 w-full md:w-2/3 lg:w-1/2 h-96 bg-white dark:bg-gray-900 shadow-2xl border-t border-l border-gray-200 dark:border-gray-700 flex flex-col z-50">
       {/* Header */}
       <div className="flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <h3 className="font-bold text-gray-900 dark:text-white">Debug Console</h3>
+        <h3 className="font-bold text-gray-900 dark:text-white">
+          Debug Console
+        </h3>
         <div className="flex items-center gap-2">
           <select
             value={filter}
@@ -182,7 +183,7 @@ export default function DebugConsole() {
             <div
               key={idx}
               className={`p-2 rounded border border-gray-200 dark:border-gray-700 ${getLevelColor(
-                log.level
+                log.level,
               )}`}
             >
               <div className="flex justify-between">
@@ -209,7 +210,8 @@ export default function DebugConsole() {
 
       {/* Footer */}
       <div className="px-3 py-2 bg-gray-100 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 text-xs text-gray-600 dark:text-gray-400">
-        Showing {filteredLogs.length} of {logs.length} logs • Press Cmd+Shift+L to toggle
+        Showing {filteredLogs.length} of {logs.length} logs • Press Cmd+Shift+L
+        to toggle
       </div>
     </div>
   );

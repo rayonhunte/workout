@@ -510,3 +510,507 @@
     font-size: 17px;
   }
 }
+
+/* Program overview: readable targets first, editing on request. */
+.fit-header-compact {
+  align-items: center;
+  margin: 8px 0 24px;
+}
+.fit-header-compact h1 {
+  font-size: clamp(28px, 3vw, 34px);
+  letter-spacing: -1px;
+}
+.fit-header-compact .fit-eyebrow {
+  margin-bottom: 8px;
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+.fitness .fit-header-subtitle {
+  margin: 8px 0 0;
+  color: var(--accent);
+  font-size: 14px;
+}
+.fit-header-tools {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.fit-header-tools > button {
+  margin: 0;
+  box-shadow: none;
+}
+.fit-save-indicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--accent);
+}
+.fit-save-indicator.needs-attention {
+  color: #956216;
+}
+.fit-program-layout {
+  display: grid;
+  gap: 28px;
+}
+.fit-program-sidebar,
+.fit-program-main {
+  min-width: 0;
+}
+.fit-program-layout .fit-panel {
+  margin: 0 0 20px;
+}
+.fit-section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.fit-section-heading h2 {
+  font-size: 17px;
+}
+.fit-section-heading > button {
+  padding: 8px;
+  border: 0;
+}
+.fit-phase-panel > .fit-muted {
+  font-size: 13px;
+  margin: 8px 0 20px;
+}
+.fit-phase-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.fitness .fit-phase-option {
+  width: 100%;
+  justify-content: flex-start;
+  gap: 12px;
+  text-align: left;
+  padding: 14px 12px;
+}
+.fit-phase-copy {
+  flex: 1;
+}
+.fit-phase-copy strong {
+  display: block;
+  font-size: 15px;
+}
+.fit-phase-copy small {
+  font-size: 12px;
+  margin-top: 3px;
+  font-weight: 400;
+}
+.fit-phase-number {
+  font-size: 12px;
+  opacity: 0.65;
+}
+.fitness .fit-phase-option[aria-pressed="true"] {
+  background: #edf4ef;
+  border-color: #9ebaaa;
+}
+.dark .fitness .fit-phase-option[aria-pressed="true"] {
+  background: #274739;
+  color: #e1f2e8;
+}
+.fit-week-heading {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 24px;
+  font-size: 12px;
+  color: var(--accent);
+}
+.fit-week-picker {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 10px;
+}
+.fitness .fit-week-picker button {
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 4px 5px;
+  min-height: 48px;
+}
+.fit-current-dot {
+  height: 4px;
+  width: 4px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.fitness .fit-week-picker [aria-current="step"]:not([aria-pressed="true"]) {
+  background: var(--paper);
+  color: var(--ink);
+  border-color: var(--accent);
+}
+.fitness .fit-phase-description {
+  font-size: 13px;
+  color: var(--accent);
+  margin: 12px 0 0;
+}
+.fitness .fit-week-preview p {
+  font-size: 13px;
+}
+.fit-week-preview > button {
+  width: 100%;
+}
+.fitness .fit-program-controls {
+  margin-top: 18px;
+}
+.fit-program-controls summary {
+  color: var(--accent);
+}
+.fit-schedule-panel > .fit-muted {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+.fit-week-strip {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 5px;
+  margin: 18px 0 12px;
+}
+.fit-day-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 1px;
+  border-radius: 9px;
+  color: #718279;
+  background: #f4f6f4;
+}
+.fit-day-tile > span {
+  font-size: 10px;
+  font-weight: 600;
+}
+.fit-day-tile strong {
+  font-size: 15px;
+}
+.fit-day-tile.is-lifting {
+  background: #e2eee6;
+  color: #215a42;
+}
+.dark .fit-day-tile {
+  background: #20382e;
+  color: #b3c5bb;
+}
+.dark .fit-day-tile.is-lifting {
+  background: #345b46;
+  color: #e4f5d6;
+}
+.fitness .fit-schedule-note {
+  font-size: 13px;
+  color: var(--accent);
+  line-height: 1.6;
+}
+.fit-workouts-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.fit-workouts-heading .fit-eyebrow {
+  color: var(--accent);
+  font-size: 10px;
+  margin-bottom: 6px;
+  letter-spacing: 1.2px;
+}
+.fit-workouts-heading h2 {
+  font-size: 22px;
+  letter-spacing: -0.4px;
+}
+.fit-workouts-heading > span {
+  font-size: 12px;
+}
+.fit-workout-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 22px;
+}
+.fitness .fit-workout-card {
+  padding: 18px 16px;
+  text-align: left;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  border-radius: 14px;
+  gap: 14px;
+}
+.fitness .fit-workout-card[aria-pressed="true"] {
+  background: #edf4ef;
+  border-color: #5b8b6a;
+  box-shadow: inset 0 -3px #427453;
+}
+.dark .fitness .fit-workout-card[aria-pressed="true"] {
+  background: #284739;
+  color: #e4f3eb;
+  border-color: #83b391;
+  box-shadow: inset 0 -3px #91c49e;
+}
+.fit-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.fit-workout-letter {
+  font-size: 26px;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+.fit-workout-card > strong {
+  font-size: 14px;
+  line-height: 1.45;
+  flex: 1;
+}
+.fit-card-meta {
+  font-size: 11px;
+  line-height: 1.65;
+  font-weight: 400;
+}
+.fit-card-meta > span {
+  white-space: pre;
+}
+.fit-workout-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+.fit-workout-heading .fit-eyebrow {
+  color: var(--accent);
+  font-size: 10px;
+  margin-bottom: 6px;
+}
+.fit-workout-heading h2 {
+  font-size: 26px;
+  letter-spacing: -0.5px;
+}
+.fit-workout-heading p {
+  margin: 4px 0 0;
+}
+.fit-workout-heading > button {
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.fit-workout-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 20px 0;
+  color: var(--accent);
+  font-size: 13px;
+}
+.fit-workout-facts > span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.fit-workout-guide {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: #f6f7f2;
+  padding: 14px 16px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+.fit-workout-guide > svg {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  color: var(--accent);
+}
+.fit-workout-guide strong,
+.fit-workout-guide span {
+  display: block;
+}
+.fit-workout-guide strong {
+  font-size: 13px;
+  font-weight: 600;
+}
+.fit-workout-guide span {
+  font-size: 12px;
+  color: var(--accent);
+  margin-top: 3px;
+}
+.dark .fit-workout-guide {
+  background: #22382e;
+}
+.fit-exercise-columns {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--accent);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+}
+.fit-plan-exercises {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px;
+}
+.fit-plan-exercises li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 17px 0;
+  border-bottom: 1px solid var(--border);
+}
+.fit-plan-index {
+  font-size: 11px;
+  color: var(--accent);
+  opacity: 0.7;
+}
+.fit-plan-name {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 550;
+}
+.fit-plan-name small {
+  color: var(--accent);
+  font-size: 11px;
+  margin-top: 3px;
+  font-weight: 400;
+}
+.fit-plan-target {
+  text-align: right;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  max-width: 40%;
+}
+.fit-cardio-guide {
+  margin-bottom: 12px;
+}
+.fitness .fit-workout-footnote {
+  font-size: 12px;
+  color: var(--accent);
+  line-height: 1.6;
+}
+.fit-proposal {
+  border-left: 3px solid #c8a755;
+  padding: 12px 14px;
+  background: #faf6e9;
+  border-radius: 0 8px 8px 0;
+  margin: 16px 0;
+  color: #655420;
+}
+.fit-proposal strong {
+  font-size: 13px;
+}
+.fitness .fit-proposal p {
+  font-size: 13px;
+  margin: 5px 0 0;
+}
+.dark .fit-proposal {
+  background: #393725;
+  color: #eee2b6;
+}
+.fit-accept-targets {
+  margin-top: 8px;
+  width: 100%;
+}
+@media (min-width: 960px) {
+  .fitness-program {
+    max-width: 1180px;
+    padding: 32px 32px 48px;
+  }
+  .fit-program-layout {
+    grid-template-columns: 320px minmax(0, 1fr);
+    align-items: start;
+  }
+  .fitness-program .fit-tabs {
+    margin-bottom: 30px;
+  }
+  .fitness-program .fit-tabs button {
+    flex-direction: row;
+    font-size: 14px;
+    gap: 10px;
+    padding: 12px;
+  }
+  .fit-workout-preview {
+    padding: 26px;
+  }
+}
+@media (max-width: 599px) {
+  .fit-header-tools {
+    flex-direction: column-reverse;
+    gap: 8px;
+    align-items: end;
+  }
+  .fit-header-tools .fit-save-indicator {
+    font-size: 11px;
+    max-width: 130px;
+    text-align: right;
+  }
+  .fit-header-compact {
+    margin-bottom: 20px;
+  }
+  .fit-program-layout {
+    gap: 8px;
+  }
+  .fit-phase-list {
+    flex-direction: row;
+    gap: 6px;
+  }
+  .fitness .fit-phase-option {
+    padding: 12px 8px;
+    display: block;
+  }
+  .fit-phase-number,
+  .fit-phase-option > svg {
+    display: none;
+  }
+  .fit-phase-copy strong {
+    font-size: 12px;
+  }
+  .fit-phase-copy small {
+    font-size: 10px;
+    line-height: 1.5;
+  }
+  .fit-workout-cards {
+    gap: 7px;
+    margin-bottom: 16px;
+  }
+  .fitness .fit-workout-card {
+    padding: 14px 10px;
+    gap: 10px;
+  }
+  .fit-workout-card > strong {
+    font-size: 12px;
+  }
+  .fit-card-meta {
+    font-size: 10px;
+  }
+  .fit-card-meta > span {
+    display: block;
+    font-size: 0;
+  }
+  .fit-workout-heading {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .fit-workout-heading > button {
+    width: 100%;
+  }
+  .fit-workout-facts {
+    font-size: 12px;
+    gap: 12px;
+  }
+  .fit-plan-exercises li {
+    gap: 10px;
+    padding: 16px 0;
+  }
+  .fit-plan-name {
+    font-size: 14px;
+  }
+  .fit-plan-target {
+    font-size: 12px;
+  }
+}
